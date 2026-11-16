@@ -102,7 +102,7 @@ export default function PanelPage({ usuario, onLogout }) {
   const vistasTotales = productos.reduce((acc, p) => acc + (p.vistas || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#070C16] text-white">
+    <div className="min-h-screen bg-negro text-blanco transition-colors duration-200">
       <NavbarComerciante usuario={usuario} onLogout={onLogout} />
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">

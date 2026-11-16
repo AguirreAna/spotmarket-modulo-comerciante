@@ -39,6 +39,33 @@ export default function AuthPage({ onLoginExitoso }) {
   const [comercios, setComercios] = useState([]);
   const [mostrarRegistro, setMostrarRegistro] = useState(false);
 
+  // Modo Oscuro / Claro
+  const [tema, setTema] = useState(() => {
+    try {
+      return localStorage.getItem('theme') || localStorage.getItem('tema') || 'oscuro';
+    } catch {
+      return 'oscuro';
+    }
+  });
+
+  useEffect(() => {
+    if (tema === 'claro') {
+      document.documentElement.classList.add('tema-claro');
+      document.documentElement.style.colorScheme = 'light';
+    } else {
+      document.documentElement.classList.remove('tema-claro');
+      document.documentElement.style.colorScheme = 'dark';
+    }
+    try {
+      localStorage.setItem('theme', tema);
+      localStorage.setItem('tema', tema);
+    } catch {}
+  }, [tema]);
+
+  const alternarTema = () => {
+    setTema((prev) => (prev === 'oscuro' ? 'claro' : 'oscuro'));
+  };
+
   useEffect(() => {
     async function cargarComercios() {
       try {
@@ -52,7 +79,7 @@ export default function AuthPage({ onLoginExitoso }) {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-negro py-10">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-negro py-10 transition-colors duration-200">
       {/* ── MAPA DE FORMOSA CAPITAL EN EL FONDO ── */}
       <div className="absolute inset-0 z-0">
         <MapContainer
@@ -94,6 +121,29 @@ export default function AuthPage({ onLoginExitoso }) {
       {/* Indicador de comercios en mapa */}
       <div className="absolute top-4 left-6 z-20 hidden sm:flex items-center gap-2 bg-gris-oscuro/90 backdrop-blur px-3 py-1.5 rounded-xl border border-borde">
         <span className="text-xs font-bold text-gris-azulado">Formosa Capital · {comercios.length} comercios en mapa</span>
+      </div>
+
+      {/* Selector de Modo Oscuro / Claro en AuthPage */}
+      <div className="absolute top-4 right-6 z-20">
+        <button
+          type="button"
+          onClick={alternarTema}
+          aria-label={`Cambiar a tema ${tema === 'oscuro' ? 'claro' : 'oscuro'}`}
+          className="flex items-center gap-2 bg-gris-oscuro/90 backdrop-blur px-3 py-1.5 rounded-xl border border-borde text-gris-azulado hover:text-amarillo transition shadow-md cursor-pointer"
+          title={tema === 'oscuro' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+        >
+          {tema === 'oscuro' ? (
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="12" r="5" />
+              <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          )}
+          <span className="text-xs font-bold">{tema === 'oscuro' ? 'Modo Claro' : 'Modo Oscuro'}</span>
+        </button>
       </div>
 
       {/* ── TARJETA CENTRAL ── */}

@@ -26,6 +26,10 @@
   --font-texto: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* ================================================================
+   TEMA CLARO
+   Tokens y adaptaciones globales de contraste
+   ================================================================ */
 html.tema-claro {
   color-scheme: light;
   --color-negro: #f3f1ec;
@@ -42,15 +46,140 @@ html.tema-claro {
   --color-naranja: #b45309;
 }
 
-html.tema-claro body {
-  background-color: var(--color-negro);
-  color: var(--color-blanco);
+html.tema-claro body,
+html.tema-claro #root,
+html.tema-claro .min-h-screen {
+  background-color: var(--color-negro) !important;
+  color: var(--color-blanco) !important;
 }
 
+html.tema-claro header,
+html.tema-claro nav {
+  background-color: rgba(243, 241, 236, 0.95) !important;
+  border-color: var(--color-borde) !important;
+}
+
+/* Tarjetas, paneles y contenedores */
+html.tema-claro .bg-gris-oscuro,
+html.tema-claro .bg-\[\#111A2E\],
+html.tema-claro .bg-\[\#111A2E\]\/50,
+html.tema-claro .bg-\[\#111A2E\]\/80,
+html.tema-claro .bg-\[\#0B111E\],
+html.tema-claro .bg-\[\#0B111E\]\/60,
+html.tema-claro .bg-\[\#0B111E\]\/90,
+html.tema-claro .bg-\[\#0B1220\],
+html.tema-claro .bg-\[\#050A14\],
+html.tema-claro .bg-\[\#050a14\],
+html.tema-claro .bg-\[\#070C16\],
+html.tema-claro .bg-\[\#070C16\]\/90,
+html.tema-claro .bg-\[\#0a1222\],
+html.tema-claro .bg-\[\#0a1428\],
+html.tema-claro .bg-\[\#050b1a\],
+html.tema-claro .bg-slate-900,
+html.tema-claro .bg-slate-800,
+html.tema-claro .bg-slate-950 {
+  background-color: var(--color-gris-oscuro) !important;
+  border-color: var(--color-borde) !important;
+  color: var(--color-blanco) !important;
+}
+
+/* Fondos principales */
+html.tema-claro .bg-negro,
+html.tema-claro .bg-negro\/95,
+html.tema-claro .bg-negro\/90,
+html.tema-claro .bg-negro\/80,
+html.tema-claro .bg-negro\/70,
+html.tema-claro .bg-negro\/60,
+html.tema-claro .bg-negro\/50 {
+  background-color: var(--color-negro) !important;
+}
+
+/* Fondos transparentes oscuros */
+html.tema-claro .bg-black\/10,
+html.tema-claro .bg-black\/20,
+html.tema-claro .bg-black\/30,
+html.tema-claro .bg-black\/40,
+html.tema-claro .bg-black\/50 {
+  background-color: #e8e3d8 !important;
+}
+
+/* Textos principales */
+html.tema-claro .text-white,
+html.tema-claro .text-blanco {
+  color: var(--color-blanco) !important;
+}
+
+/* Textos secundarios y neutros */
+html.tema-claro .text-gray-100,
+html.tema-claro .text-gray-200,
+html.tema-claro .text-gray-300,
+html.tema-claro .text-gray-400,
+html.tema-claro .text-gris-azulado {
+  color: var(--color-gris-azulado) !important;
+}
+
+/* Bordes */
+html.tema-claro .border-white\/5,
+html.tema-claro .border-white\/10,
+html.tema-claro .border-white\/15,
+html.tema-claro .border-white\/20,
+html.tema-claro .border-white\/30,
+html.tema-claro .border-slate-800,
+html.tema-claro .border-slate-700,
+html.tema-claro .border-borde {
+  border-color: var(--color-borde) !important;
+}
+
+/* Inputs, Textareas, Selects */
+html.tema-claro input,
+html.tema-claro textarea,
+html.tema-claro select {
+  background-color: #ffffff !important;
+  color: #151a2c !important;
+  border-color: var(--color-borde) !important;
+}
+
+html.tema-claro input::placeholder,
+html.tema-claro textarea::placeholder {
+  color: #8c96a8 !important;
+}
+
+/* Estados hover de botones secundarios */
+html.tema-claro .hover\:bg-white\/5:hover,
+html.tema-claro .hover\:bg-white\/10:hover {
+  background-color: rgba(21, 26, 44, 0.05) !important;
+}
+
+/* Sombras en modo claro */
+html.tema-claro .bg-gris-oscuro,
+html.tema-claro .bg-\[\#111A2E\] {
+  box-shadow: 0 1px 3px rgba(21, 26, 44, 0.08), 0 4px 12px rgba(21, 26, 44, 0.04);
+}
+
+/* Ajustes de marca en tema claro */
+html.tema-claro .fondo-dorado,
+html.tema-claro .bg-amarillo {
+  color: #1f1500;
+}
+
+html.tema-claro .text-amarillo {
+  color: #8a5a00;
+}
+
+html.tema-claro footer {
+  background-color: #eae5db !important;
+  border-color: var(--color-borde) !important;
+}
+
+/* Leaflet Popups */
 html.tema-claro .leaflet-popup-content-wrapper {
   background: var(--color-gris-oscuro) !important;
   color: var(--color-blanco) !important;
   border: 1px solid var(--color-borde) !important;
+}
+
+html.tema-claro .leaflet-popup-tip {
+  background: var(--color-gris-oscuro) !important;
 }
 
 @layer utilities {
@@ -64,12 +193,17 @@ html.tema-claro .leaflet-popup-content-wrapper {
   }
 }
 
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-negro);
+}
+
 body {
   margin: 0;
   background-color: var(--color-negro);
   color: var(--color-blanco);
   font-family: var(--font-texto);
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {

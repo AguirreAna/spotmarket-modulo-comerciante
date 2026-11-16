@@ -57,7 +57,7 @@ export default function App() {
 
   if (verificando) {
     return (
-      <div className="min-h-screen bg-[#070C16] flex items-center justify-center text-gray-400 text-sm">
+      <div className="min-h-screen bg-negro flex items-center justify-center text-gris-azulado text-sm">
         Iniciando Módulo de Comerciante...
       </div>
     );

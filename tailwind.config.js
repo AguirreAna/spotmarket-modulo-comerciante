@@ -4,24 +4,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        negro: '#050b1a',
-        'gris-oscuro': '#0a1428',
-        borde: '#1b2a4a',
-        blanco: '#f4f7ff',
-        'gris-azulado': '#9aa8c4',
-        amarillo: '#ffc72c',
-        rojo: '#f2384f',
-        'rojo-oscuro': '#521719',
-        azul: '#3b82f6',
-        verde: '#22c58b',
-        violeta: '#a78bfa',
-        naranja: '#f59e0b',
+        negro: 'var(--color-negro)',
+        'gris-oscuro': 'var(--color-gris-oscuro)',
+        borde: 'var(--color-borde)',
+        blanco: 'var(--color-blanco)',
+        'gris-azulado': 'var(--color-gris-azulado)',
+        amarillo: 'var(--color-amarillo)',
+        rojo: 'var(--color-rojo)',
+        'rojo-oscuro': 'var(--color-rojo-oscuro)',
+        azul: 'var(--color-azul)',
+        verde: 'var(--color-verde)',
+        violeta: 'var(--color-violeta)',
+        naranja: 'var(--color-naranja)',
         brand: {
-          dark: '#050b1a',
-          card: '#0a1428',
-          yellow: '#ffc72c',
-          orange: '#f59e0b',
-          red: '#f2384f'
+          dark: 'var(--color-negro)',
+          card: 'var(--color-gris-oscuro)',
+          yellow: 'var(--color-amarillo)',
+          orange: 'var(--color-naranja)',
+          red: 'var(--color-rojo)'
         }
       },
       fontFamily: {
