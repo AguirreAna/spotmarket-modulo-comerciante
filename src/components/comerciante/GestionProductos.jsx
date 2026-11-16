@@ -187,7 +187,7 @@ export default function GestionProductos({ productos = [], onActualizar }) {
                 productosFiltrados.map((prod) => (
                   <tr key={prod.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-5 py-4 font-semibold text-blanco flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-negro/50 border border-borde flex items-center justify-center overflow-hidden flex-shrink-0 text-xl">
+                      <div className="w-10 h-10 rounded-lg bg-negro/50 border border-borde flex items-center justify-center overflow-hidden flex-shrink-0 text-[10px] text-gray-500 font-semibold">
                         {prod.imagen_url ? (
                           <img
                             src={resolverUrlImagen(prod.imagen_url)}
@@ -195,13 +195,13 @@ export default function GestionProductos({ productos = [], onActualizar }) {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          '📦'
+                          'Sin foto'
                         )}
                       </div>
                       <div>
                         <p className="truncate max-w-xs text-blanco">{prod.nombre}</p>
                         {prod.destacado && (
-                          <span className="text-[10px] text-amarillo font-bold">★ Destacado en Inicio</span>
+                          <span className="text-[10px] text-amarillo font-bold">Destacado en Inicio</span>
                         )}
                       </div>
                     </td>
@@ -345,7 +345,7 @@ export default function GestionProductos({ productos = [], onActualizar }) {
                 />
                 {archivoImagen && (
                   <div className="mt-2 flex items-center gap-2 text-xs text-emerald-400">
-                    <span>✓ Foto seleccionada:</span> {archivoImagen.name}
+                    <span>Foto seleccionada:</span> {archivoImagen.name}
                   </div>
                 )}
               </div>

@@ -24,7 +24,6 @@ export default function ResumenDashboard({
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-5 shadow-lg space-y-2">
           <div className="flex items-center justify-between text-gray-400 text-xs font-bold uppercase tracking-wider">
             <span>Productos Activos</span>
-            <span className="text-base">📦</span>
           </div>
           <div className="flex items-baseline justify-between">
             <p className="text-3xl font-black text-white">{productos.length}</p>
@@ -43,7 +42,6 @@ export default function ResumenDashboard({
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-5 shadow-lg space-y-2">
           <div className="flex items-center justify-between text-gray-400 text-xs font-bold uppercase tracking-wider">
             <span>Ofertas Vigentes</span>
-            <span className="text-base">🏷️</span>
           </div>
           <div className="flex items-baseline justify-between">
             <p className="text-3xl font-black text-[#EF4444]">{ofertasActivas}</p>
@@ -62,14 +60,13 @@ export default function ResumenDashboard({
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-5 shadow-lg space-y-2">
           <div className="flex items-center justify-between text-gray-400 text-xs font-bold uppercase tracking-wider">
             <span>Valoraciones</span>
-            <span className="text-base">⭐</span>
           </div>
           <div className="flex items-baseline justify-between">
             <p className="text-3xl font-black text-[#FFB800]">
               {resumenVal?.total != null ? resumenVal.total : 0}
             </p>
             <span className="text-[10px] text-gray-400 font-bold">
-              {promedioEstrellas != null ? `${promedioEstrellas} ★ promedio` : 'Sin reseñas'}
+              {promedioEstrellas != null ? `${promedioEstrellas} / 5 promedio` : 'Sin reseñas'}
             </span>
           </div>
           <p className="text-[11px] text-gray-400 font-medium mt-1">
@@ -84,7 +81,7 @@ export default function ResumenDashboard({
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <span>🔥</span> Productos más solicitados y vistos
+              Productos más solicitados y vistos
             </h3>
             <span className="text-xs text-gray-400">Góndola Formosa</span>
           </div>
@@ -97,7 +94,7 @@ export default function ResumenDashboard({
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-[#FFB800] w-4">#{idx + 1}</span>
-                  <div className="w-11 h-11 rounded-lg bg-black/40 overflow-hidden flex items-center justify-center flex-shrink-0 border border-white/10">
+                  <div className="w-11 h-11 rounded-lg bg-black/40 overflow-hidden flex items-center justify-center flex-shrink-0 border border-white/10 text-[10px] text-gray-500 font-semibold">
                     {p.imagen_url ? (
                       <img
                         src={resolverUrlImagen(p.imagen_url)}
@@ -105,7 +102,7 @@ export default function ResumenDashboard({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      '📦'
+                      'Sin foto'
                     )}
                   </div>
                   <div>
@@ -117,7 +114,7 @@ export default function ResumenDashboard({
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-bold text-emerald-400 block">{p.vistas || 0} vistas</span>
-                  <span className="text-[10px] text-red-400 font-medium">♥ {p.likes || 0} favoritos</span>
+                  <span className="text-[10px] text-gray-400 font-medium">{p.likes || 0} favoritos</span>
                 </div>
               </div>
             ))}
@@ -134,10 +131,10 @@ export default function ResumenDashboard({
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <span>💬</span> Valoraciones
+              Valoraciones
             </h3>
             <span className="text-xs text-[#FFB800] font-bold">
-              {promedioEstrellas ? `${promedioEstrellas} de 5 estrellas` : 'Sin opiniones'}
+              {promedioEstrellas ? `${promedioEstrellas} de 5 puntos` : 'Sin opiniones'}
             </span>
           </div>
 
@@ -152,7 +149,7 @@ export default function ResumenDashboard({
                     <span className="text-xs font-bold text-white">
                       {val.usuario?.nombre || 'Cliente SpotMarket'}
                     </span>
-                    <span className="text-[#FFB800] text-xs">{'★'.repeat(val.puntuacion || 5)}</span>
+                    <span className="text-[#FFB800] text-xs font-semibold">{val.puntuacion || 5} / 5</span>
                   </div>
                   <span className="text-[10px] text-gray-400">
                     {val.createdAt ? new Date(val.createdAt).toLocaleDateString('es-AR') : ''}
@@ -169,7 +166,6 @@ export default function ResumenDashboard({
 
             {valoraciones.length === 0 && (
               <div className="text-center py-8 text-gray-400 space-y-1">
-                <span className="text-2xl block">⭐</span>
                 <p className="text-xs font-medium">Tus productos aún no recibieron valoraciones.</p>
                 <p className="text-[11px] text-gray-500">
                   A medida que los vecinos consulten tus productos en el mapa podrán calificar su satisfacción.

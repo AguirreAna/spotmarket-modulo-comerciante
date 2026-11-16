@@ -105,9 +105,9 @@ export default function PerfilComercio({ comercio, onActualizar }) {
               <h4 className="text-sm font-bold text-blanco">Fotografía del Local Comercial</h4>
               <button
                 onClick={() => setFotoModal(null)}
-                className="text-gris-azulado hover:text-blanco font-bold text-sm px-2 py-1 rounded"
+                className="text-gris-azulado hover:text-blanco font-bold text-xs px-2 py-1 rounded"
               >
-                ✕ Cerrar
+                Cerrar
               </button>
             </div>
             <div className="w-full max-h-[70vh] flex items-center justify-center overflow-hidden rounded-xl bg-black">
@@ -125,7 +125,7 @@ export default function PerfilComercio({ comercio, onActualizar }) {
                   onClick={() => handleEliminarFoto(fotoModal.id)}
                   className="px-3 py-1.5 rounded-lg bg-rojo/20 text-rojo border border-rojo/30 hover:bg-rojo/30 font-semibold transition"
                 >
-                  🗑️ Eliminar esta fotografía
+                  Eliminar esta fotografía
                 </button>
               )}
             </div>
@@ -134,8 +134,8 @@ export default function PerfilComercio({ comercio, onActualizar }) {
       )}
 
       <div>
-        <h3 className="font-bold text-lg text-blanco flex items-center gap-2">
-          <span>🏪</span> Perfil y Canales de Contacto Directo
+        <h3 className="font-bold text-lg text-blanco">
+          Perfil y Canales de Contacto Directo
         </h3>
         <p className="text-xs text-gris-azulado mt-1">
           Los vecinos verán estos datos para ubicar tu negocio y enviarte mensajes.
@@ -144,7 +144,7 @@ export default function PerfilComercio({ comercio, onActualizar }) {
 
       {mensaje && (
         <div className="bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs p-3.5 rounded-xl font-medium">
-          ✓ {mensaje}
+          {mensaje}
         </div>
       )}
 
@@ -231,7 +231,7 @@ export default function PerfilComercio({ comercio, onActualizar }) {
         <div className="pt-4 border-t border-borde space-y-3">
           <div className="flex items-center justify-between">
             <label className="block text-[11px] font-bold uppercase text-amarillo">
-              📸 Fotografías del Local Comercial ({comercio?.fotos?.length || 0})
+              Fotografías del Local Comercial ({comercio?.fotos?.length || 0})
             </label>
             <span className="text-[10px] text-gris-azulado">Hacé clic en cualquier foto para verla ampliada o eliminarla</span>
           </div>
@@ -260,12 +260,10 @@ export default function PerfilComercio({ comercio, onActualizar }) {
                         handleEliminarFoto(f.id);
                       }}
                       disabled={eliminandoFotoId === f.id}
-                      className="absolute top-1.5 right-1.5 p-1 rounded-full bg-rojo text-blanco opacity-90 hover:opacity-100 hover:scale-110 shadow transition"
+                      className="absolute top-1.5 right-1.5 px-2 py-0.5 rounded bg-rojo text-blanco text-[10px] font-bold shadow hover:brightness-110 transition"
                       title="Eliminar foto"
                     >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      Eliminar
                     </button>
                   )}
                 </div>
@@ -290,7 +288,7 @@ export default function PerfilComercio({ comercio, onActualizar }) {
             />
             {nuevasFotos.length > 0 && (
               <p className="text-[10px] text-verde mt-1 font-semibold">
-                ✓ {nuevasFotos.length} nueva(s) foto(s) lista(s) para subir al guardar.
+                {nuevasFotos.length} nueva(s) foto(s) lista(s) para subir al guardar.
               </p>
             )}
           </div>

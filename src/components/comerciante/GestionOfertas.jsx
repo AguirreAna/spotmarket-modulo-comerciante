@@ -131,8 +131,7 @@ export default function GestionOfertas({ productos = [], ofertas = [], onActuali
       {/* ── FORMULARIO: CREAR O EDITAR OFERTA ── */}
       <div className="lg:col-span-5 bg-[#111A2E] border border-white/10 rounded-2xl p-6 space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-white/10">
-          <h3 className="font-bold text-sm text-white flex items-center gap-2">
-            <span>{ofertaEditar ? '✏️' : '🏷️'}</span>
+          <h3 className="font-bold text-sm text-white">
             {ofertaEditar ? 'Editar Oferta Temporal' : 'Lanzar Oferta de la Semana'}
           </h3>
           {ofertaEditar && (
@@ -152,14 +151,14 @@ export default function GestionOfertas({ productos = [], ofertas = [], onActuali
         </p>
 
         {mensaje && (
-          <div className="bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs p-3 rounded-xl">
-            ✓ {mensaje}
+          <div className="bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs p-3 rounded-xl font-semibold">
+            {mensaje}
           </div>
         )}
 
         {error && (
-          <div className="bg-red-500/15 border border-red-500/40 text-red-300 text-xs p-3 rounded-xl">
-            ⚠️ {error}
+          <div className="bg-red-500/15 border border-red-500/40 text-red-300 text-xs p-3 rounded-xl font-semibold">
+            {error}
           </div>
         )}
 
@@ -273,8 +272,8 @@ export default function GestionOfertas({ productos = [], ofertas = [], onActuali
       {/* ── LISTADO: OFERTAS VIGENTES Y ACTIVAS ── */}
       <div className="lg:col-span-7 bg-[#111A2E] border border-white/10 rounded-2xl p-6 space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-white/10">
-          <h3 className="font-bold text-sm text-white flex items-center gap-2">
-            <span>🔥</span> Ofertas Activas del Comercio ({listaOfertas.length})
+          <h3 className="font-bold text-sm text-white">
+            Ofertas Activas del Comercio ({listaOfertas.length})
           </h3>
           <span className="text-[10px] text-[#FFB800] bg-[#FFB800]/10 border border-[#FFB800]/30 px-2 py-0.5 rounded-full font-bold">
             Visibles en Inicio
@@ -283,7 +282,6 @@ export default function GestionOfertas({ productos = [], ofertas = [], onActuali
 
         {listaOfertas.length === 0 ? (
           <div className="text-center py-12 text-gray-500 text-xs space-y-2">
-            <span className="text-3xl block">🏷️</span>
             <p>No tenés ofertas activas en este momento.</p>
             <p className="text-gray-400">Usá el formulario a la izquierda para activar promociones semanales.</p>
           </div>

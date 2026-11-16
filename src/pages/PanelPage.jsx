@@ -15,10 +15,10 @@ import PerfilComercio from '../components/comerciante/PerfilComercio.jsx';
 import { api } from '../services/api.js';
 
 const TABS = [
-  { id: 'resumen', label: 'Resumen General', icono: '📊' },
-  { id: 'productos', label: 'Catálogo de Productos', icono: '📦' },
-  { id: 'ofertas', label: 'Ofertas & Descuentos', icono: '🏷️' },
-  { id: 'perfil', label: 'Perfil del Comercio', icono: '🏪' }
+  { id: 'resumen', label: 'Resumen General' },
+  { id: 'productos', label: 'Catálogo de Productos' },
+  { id: 'ofertas', label: 'Ofertas & Descuentos' },
+  { id: 'perfil', label: 'Perfil del Comercio' }
 ];
 
 export default function PanelPage({ usuario, onLogout }) {
@@ -130,14 +130,13 @@ export default function PanelPage({ usuario, onLogout }) {
               <button
                 key={t.id}
                 onClick={() => setTabActiva(t.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   tabActiva === t.id
                     ? 'bg-[#FFB800] text-black shadow-lg scale-[1.02]'
                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <span>{t.icono}</span>
-                <span>{t.label}</span>
+                {t.label}
               </button>
             ))}
           </div>

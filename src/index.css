@@ -26,6 +26,37 @@
   --font-texto: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+html.tema-claro {
+  color-scheme: light;
+  --color-negro: #f3f1ec;
+  --color-gris-oscuro: #ffffff;
+  --color-borde: #d6d0c2;
+  --color-blanco: #151a2c;
+  --color-gris-azulado: #5d6678;
+  --color-amarillo: #f2b705;
+  --color-rojo: #d1243d;
+  --color-rojo-oscuro: #fbe4e8;
+  --color-azul: #2563eb;
+  --color-verde: #0b7a54;
+  --color-violeta: #7c3aed;
+  --color-naranja: #b45309;
+}
+
+html.tema-claro body {
+  background-color: var(--color-negro);
+  color: var(--color-blanco);
+}
+
+html.tema-claro .leaflet-tile-pane {
+  filter: none !important;
+}
+
+html.tema-claro .leaflet-popup-content-wrapper {
+  background: var(--color-gris-oscuro) !important;
+  color: var(--color-blanco) !important;
+  border: 1px solid var(--color-borde) !important;
+}
+
 @layer utilities {
   .fondo-dorado {
     background-image: linear-gradient(
@@ -42,13 +73,14 @@ body {
   background-color: var(--color-negro);
   color: var(--color-blanco);
   font-family: var(--font-texto);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-titulo);
 }
 
-/* Estilos de mapa oscuro idénticos a Daiana45/proyect */
+/* Estilos de mapa */
 .leaflet-tile {
   outline: 1px solid transparent;
 }

@@ -1,9 +1,9 @@
 /**
  * Componente: RegisterComercioForm
  * Formulario de alta dual para SpotMarket (Formosa Capital):
- * Permite registrar tanto a Vecinos/Usuarios (Consumidores) como a Comerciantes Locales.
- * - Si es Comerciante: Datos + Tipo Minorista/Mayorista + 27 Rubros A-Z + Mapa con Agrandar Pantalla + Fotos de Fachada.
- * - Si es Usuario/Vecino: Registro rápido con nombre, email y contraseña.
+ * Permite registrar tanto a Usuarios (Consumidores) como a Comerciantes Locales.
+ * - Sin iconos decorativos.
+ * - Registro de Usuario con teléfono opcional.
  */
 import { useState, useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -51,10 +51,11 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
   const [fotos, setFotos] = useState([]);
   const [mapaAgrandado, setMapaAgrandado] = useState(false);
 
-  // Form Vecino / Usuario
+  // Form Usuario (con teléfono opcional)
   const [formUsuario, setFormUsuario] = useState({
     nombre: '',
     email: '',
+    telefono: '',
     password: '',
     confirmarPassword: ''
   });
@@ -103,7 +104,7 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
     return FORMOSA;
   }, [form.latitud, form.longitud]);
 
-  // Submit Usuario / Vecino
+  // Submit Usuario
   const handleSubmitUsuario = async (e) => {
     e.preventDefault();
     setError('');
@@ -124,6 +125,7 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
         body: JSON.stringify({
           nombre: formUsuario.nombre.trim(),
           email: formUsuario.email.trim(),
+          telefono: formUsuario.telefono ? formUsuario.telefono.trim() : null,
           password: formUsuario.password
         })
       });
@@ -205,7 +207,7 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
 
   return (
     <div className="space-y-6">
-      {/* SELECTOR DUAL DE REGISTRO */}
+      {/* SELECTOR DUAL DE REGISTRO (SIN ICONOS) */}
       <div className="rounded-xl bg-negro/50 border border-borde p-1 flex gap-2">
         <button
           type="button"
@@ -213,14 +215,13 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
             setRolRegistro('comerciante');
             setError('');
           }}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center cursor-pointer ${
             rolRegistro === 'comerciante'
               ? 'fondo-dorado text-negro shadow'
               : 'text-gris-azulado hover:text-blanco'
           }`}
         >
-          <span>🏪</span>
-          <span>Soy Comerciante</span>
+          Soy Comerciante
         </button>
         <button
           type="button"
@@ -228,25 +229,23 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
             setRolRegistro('usuario');
             setError('');
           }}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center cursor-pointer ${
             rolRegistro === 'usuario'
               ? 'fondo-dorado text-negro shadow'
               : 'text-gris-azulado hover:text-blanco'
           }`}
         >
-          <span>👤</span>
-          <span>Soy Vecino / Usuario</span>
+          Soy Usuario
         </button>
       </div>
 
       {error && (
-        <div className="bg-rojo/15 border border-rojo/40 text-rojo text-xs p-3.5 rounded-xl flex items-center gap-2">
-          <span>⚠️</span>
-          <span>{error}</span>
+        <div className="bg-rojo/15 border border-rojo/40 text-rojo text-xs p-3.5 rounded-xl">
+          {error}
         </div>
       )}
 
-      {/* REGISTRO DE VECINO */}
+      {/* REGISTRO DE USUARIO */}
       {rolRegistro === 'usuario' ? (
         <form onSubmit={handleSubmitUsuario} className="space-y-4">
           <div>
@@ -275,6 +274,20 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
               onChange={handleChangeUsuario}
               placeholder="juan@ejemplo.com"
               required
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+              Número de teléfono (opcional)
+            </label>
+            <input
+              type="tel"
+              name="telefono"
+              value={formUsuario.telefono}
+              onChange={handleChangeUsuario}
+              placeholder="Ej: 3704-123456 (opcional)"
               className={inputClass}
             />
           </div>
@@ -313,9 +326,9 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
           <button
             type="submit"
             disabled={cargando}
-            className="w-full rounded-xl fondo-dorado text-negro font-extrabold py-3 text-sm transition-all shadow-lg hover:brightness-110 disabled:opacity-50 mt-4"
+            className="w-full rounded-xl fondo-dorado text-negro font-extrabold py-3 text-sm transition-all shadow-lg hover:brightness-110 disabled:opacity-50 mt-4 cursor-pointer"
           >
-            {cargando ? 'Creando cuenta de vecino...' : 'Completar Registro de Vecino'}
+            {cargando ? 'Creando cuenta de usuario...' : 'Completar Registro de Usuario'}
           </button>
         </form>
       ) : (
@@ -323,8 +336,8 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
         <form onSubmit={handleSubmitComercio} className="space-y-6">
           {/* SECCIÓN 1: DATOS */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase text-amarillo flex items-center gap-1.5 border-b border-borde pb-1">
-              <span>1.</span> Datos del Comercio
+            <h4 className="text-xs font-bold uppercase text-amarillo border-b border-borde pb-1">
+              1. Datos del Comercio
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -374,14 +387,14 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
               </div>
               <div>
                 <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
-                  Teléfono / WhatsApp
+                  Teléfono / WhatsApp (opcional)
                 </label>
                 <input
                   type="tel"
                   name="telefono"
                   value={form.telefono}
                   onChange={handleChange}
-                  placeholder="3704-XXXXXX"
+                  placeholder="3704-XXXXXX (opcional)"
                   className={inputClass}
                 />
               </div>
@@ -442,7 +455,7 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
                       type="button"
                       key={cat}
                       onClick={() => toggleCategoria(cat)}
-                      className={`text-[11px] px-2.5 py-1 rounded-lg border transition ${
+                      className={`text-[11px] px-2.5 py-1 rounded-lg border transition cursor-pointer ${
                         sel
                           ? 'bg-amarillo text-negro border-amarillo font-bold'
                           : 'bg-white/5 text-gris-azulado border-borde hover:text-blanco'
@@ -459,15 +472,15 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
           {/* SECCIÓN 2: UBICACIÓN */}
           <div className="space-y-3">
             <div className="flex items-center justify-between border-b border-borde pb-1">
-              <h4 className="text-xs font-bold uppercase text-amarillo flex items-center gap-1.5">
-                <span>2.</span> Ubicación en Formosa Capital
+              <h4 className="text-xs font-bold uppercase text-amarillo">
+                2. Ubicación en Formosa Capital
               </h4>
               <button
                 type="button"
                 onClick={() => setMapaAgrandado((v) => !v)}
-                className="text-xs font-bold text-amarillo hover:underline"
+                className="text-xs font-bold text-amarillo hover:underline cursor-pointer"
               >
-                {mapaAgrandado ? '⤢ Reducir mapa' : '⤢ Agrandar pantalla completa'}
+                {mapaAgrandado ? 'Reducir mapa' : 'Agrandar pantalla completa'}
               </button>
             </div>
             <div>
@@ -498,9 +511,9 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
                   <button
                     type="button"
                     onClick={() => setMapaAgrandado(false)}
-                    className="px-3 py-1 rounded-lg bg-rojo text-blanco font-bold text-xs"
+                    className="px-3 py-1 rounded-lg bg-rojo text-blanco font-bold text-xs cursor-pointer"
                   >
-                    ✕ Cerrar pantalla
+                    Cerrar pantalla
                   </button>
                 </div>
               )}
@@ -551,9 +564,9 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
                     <button
                       type="button"
                       onClick={() => quitarFoto(index)}
-                      className="absolute top-1 right-1 bg-rojo text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold"
+                      className="absolute top-1 right-1 bg-rojo text-white text-[10px] px-1.5 py-0.5 rounded font-bold cursor-pointer"
                     >
-                      ✕
+                      Quitar
                     </button>
                   </div>
                 ))}
@@ -564,7 +577,7 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
           <button
             type="submit"
             disabled={cargando}
-            className="w-full rounded-xl fondo-dorado text-negro font-extrabold py-3 text-sm transition-all shadow-lg hover:brightness-110 disabled:opacity-50"
+            className="w-full rounded-xl fondo-dorado text-negro font-extrabold py-3 text-sm transition-all shadow-lg hover:brightness-110 disabled:opacity-50 cursor-pointer"
           >
             {cargando ? 'Procesando registro comercial...' : 'Completar Registro de Comercio'}
           </button>
@@ -576,9 +589,9 @@ export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin 
           <button
             type="button"
             onClick={onVolverLogin}
-            className="text-xs text-gris-azulado hover:text-blanco transition"
+            className="text-xs text-gris-azulado hover:text-blanco transition cursor-pointer"
           >
-            ← Volver a Iniciar Sesión
+            Volver a Iniciar Sesión
           </button>
         </div>
       )}
