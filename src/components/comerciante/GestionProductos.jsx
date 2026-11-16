@@ -8,20 +8,10 @@
  */
 import { useState } from 'react';
 import { api } from '../../services/api.js';
+import { CATEGORIAS_PRODUCTOS } from '../../constants/categorias.js';
+import { resolverUrlImagen } from '../../utils/imageUrl.js';
 
-const CATEGORIAS = [
-  'Alimentos',
-  'Bebidas',
-  'Panadería',
-  'Frutas y Verduras',
-  'Limpieza',
-  'Lácteos',
-  'Carnes',
-  'Deportes',
-  'Hogar',
-  'Mascotas',
-  'Otros'
-];
+const CATEGORIAS = CATEGORIAS_PRODUCTOS;
 
 export default function GestionProductos({ productos = [], onActualizar }) {
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -204,7 +194,11 @@ export default function GestionProductos({ productos = [], onActualizar }) {
                     <td className="px-5 py-4 font-semibold text-white flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 text-xl">
                         {prod.imagen_url ? (
-                          <img src={prod.imagen_url} alt="" className="w-full h-full object-cover" />
+                          <img
+                            src={resolverUrlImagen(prod.imagen_url)}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           '📦'
                         )}
@@ -347,6 +341,11 @@ export default function GestionProductos({ productos = [], onActualizar }) {
                   onChange={(e) => setArchivoImagen(e.target.files?.[0] || null)}
                   className="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#FFB800] file:text-black cursor-pointer"
                 />
+                {archivoImagen && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-emerald-400">
+                    <span>✓ Foto seleccionada:</span> {archivoImagen.name}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2 pt-1">

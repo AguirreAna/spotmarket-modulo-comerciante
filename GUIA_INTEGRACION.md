@@ -26,15 +26,15 @@ Copia las siguientes carpetas y archivos dentro del directorio `src/` de tu proy
 
 | Origen en este módulo | Destino en tu proyecto | Descripción |
 | :--- | :--- | :--- |
-| `src/components/auth/` | `src/components/auth/` | Formularios de Login y Registro de Comerciantes |
-| `src/components/comerciante/` | `src/components/comerciante/` | Dashboard, CRUD de Productos, Ofertas y Perfil |
+| `src/constants/categorias.js` | `src/constants/categorias.js` | Tipos de comercio (Minorista/Mayorista) y 27 categorías de productos A-Z |
+| `src/utils/imageUrl.js` | `src/utils/imageUrl.js` | Resuelve URLs locales (`/uploads`) y de nube (Cloudinary) |
+| `src/components/auth/` | `src/components/auth/` | Formularios de Login y Registro de Comerciantes con mapa y fotos |
+| `src/components/comerciante/` | `src/components/comerciante/` | Dashboard, CRUD de Productos con preview, Ofertas y Perfil |
 | `src/hooks/useForm.js` | `src/hooks/useForm.js` | Hook para manejo de inputs y validación |
 | `src/hooks/useFetch.js` | `src/hooks/useFetch.js` | Hook para consumo HTTP con `AbortController` |
 | `src/services/api.js` | `src/services/api.js` | Cliente centralizado con `credentials: 'include'` |
 | `src/assets/Logo.svg` | `src/assets/Logo.svg` | Logotipos oficiales SpotMarket |
 | `src/assets/LogoNavbar.svg` | `src/assets/LogoNavbar.svg` | |
-
-> **Nota:** Si tu proyecto ya tiene un `api.js` o hooks con los mismos nombres, no los sobreescribas; simplemente renómbralos a `useFormComercio.js` o ajusta la ruta de importación.
 
 ---
 
@@ -69,123 +69,28 @@ export default {
 
 ---
 
-## 🌐 Paso 3: Conexión con el Backend
+## 🌐 Paso 3: Conexión con el Backend (XAMPP / MySQL)
 
-El servicio `src/services/api.js` está preparado para comunicarse con el backend en el puerto `4000` (o el que defina tu variable de entorno).
+El servicio `src/services/api.js` está preparado para comunicarse con el backend en el puerto `4000`.
 
 En el archivo `.env` del proyecto destino agrega:
 ```env
 VITE_API_URL=http://localhost:4000/api
-```
-
-O si utilizas el proxy de **Vite** en `vite.config.js`:
-```javascript
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:4000',
-        changeOrigin: true
-      }
-    }
-  }
-})
+VITE_BACKEND_URL=http://localhost:4000
 ```
 
 > ⚠️ **Muy importante para la autenticación:** Todas las peticiones fetch de `api.js` llevan `credentials: 'include'`. Esto es obligatorio para que el navegador guarde y envíe automáticamente la cookie `token` (JWT `httpOnly`) que emite el backend de SpotMarket.
 
 ---
 
-## 🚦 Paso 4: Incorporar las Rutas en tu Aplicación
-
-### Opción A: Usando React Router DOM (v6)
-
-Si tu proyecto utiliza `react-router-dom`:
-
-```jsx
-import { Routes, Route, Navigate } from 'react-router-dom';
-import AuthPage from './pages/AuthPage';
-import PanelPage from './pages/PanelPage';
-
-// Componente para proteger la ruta del comerciante
-function RutaProtegidaComerciante({ children }) {
-  const isLogged = localStorage.getItem('isLogged') === 'true';
-  const rol = localStorage.getItem('rol');
-
-  if (!isLogged || rol !== 'comercio') {
-    return <Navigate to="/auth" replace />;
-  }
-  return children;
-}
-
-export default function AppRoutes() {
-  return (
-    <Routes>
-      {/* Tus rutas públicas existentes (Inicio, Catálogo, etc.) */}
-      
-      {/* Rutas del Módulo Comerciante */}
-      <Route path="/auth" element={<AuthPage onLoginSuccess={(u) => window.location.href = '/panel'} />} />
-      <Route 
-        path="/panel" 
-        element={
-          <RutaProtegidaComerciante>
-            <PanelPage onLogout={() => window.location.href = '/auth'} />
-          </RutaProtegidaComerciante>
-        } 
-      />
-    </Routes>
-  );
-}
-```
-
-### Opción B: Usando Estado Nativo (Sin React Router)
-
-Si tu proyecto prefiere cambiar de vistas con estado nativo (enfoque Unidad 1 de la cátedra):
-
-```jsx
-import { useState } from 'react';
-import AuthPage from './pages/AuthPage';
-import PanelPage from './pages/PanelPage';
-import Inicio from './pages/Inicio'; // Tu página principal
-
-export default function App() {
-  const [vista, setVista] = useState('inicio');
-  const [usuario, setUsuario] = useState(() => {
-    const raw = localStorage.getItem('usuario');
-    return raw ? JSON.parse(raw) : null;
-  });
-
-  const handleLogin = (user) => {
-    setUsuario(user);
-    setVista('panel');
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('isLogged');
-    localStorage.removeItem('rol');
-    localStorage.removeItem('usuario');
-    setUsuario(null);
-    setVista('inicio');
-  };
-
-  return (
-    <div className="bg-[#070C16] text-white min-h-screen">
-      {vista === 'inicio' && <Inicio irALogin={() => setVista('auth')} />}
-      {vista === 'auth' && <AuthPage onLoginSuccess={handleLogin} onVolver={() => setVista('inicio')} />}
-      {vista === 'panel' && <PanelPage usuario={usuario} onLogout={handleLogout} />}
-    </div>
-  );
-}
-```
-
----
-
 ## 🔒 Reglas de Negocio Implementadas en este Módulo
 
 Al unir este módulo con el resto del sistema, ten en cuenta que respeta al 100% las definiciones del examen final:
-1. **Sin Stock:** El formulario de producto y la base de datos no contienen campo de stock. La disponibilidad se consulta directamente al comerciante por WhatsApp o en el local.
-2. **Sin Negociación ni Regateo:** Los precios son fijos (Precio regular y Precio de Oferta).
-3. **Sin Chat ni Pedidos:** Cada producto y comercio ofrece botón de contacto directo por WhatsApp o llamada telefónica.
-4. **Sin Directorio de Clientes:** El comerciante no tiene acceso a un listado de usuarios ni clientes registrados.
-5. **Sin Calificaciones de Comercios:** Los comerciantes no pueden calificar ni ser calificados como entidades; las valoraciones son exclusivamente de 1 a 5 estrellas sobre productos individuales.
+1. **Tipo de Comercio:** Diferenciación estricta entre **Minorista** y **Mayorista**.
+2. **Categoría de Productos:** 27 categorías oficiales en orden alfabético A-Z (Almacén, Artesanías, Artículos de limpieza, Bazar, Bebidas, Carnicería, Embutidos, Farmacias, Ferretería, Fiambrería, Forrajería / Pet Shop, Frutería, Juguetería, Kiosco, Lácteos, Librería, Maxikiosco, Mueblería, Panadería, Pescadería, Polirubro, Pollería, Regalería, Ropería, Verdulería, Vivero, Zapatería).
+3. **Fotos Visibles:** Previsualización inmediata en el cliente y soporte dual de almacenamiento (local en `/uploads` o Cloudinary).
+4. **Mapa con Pantalla Completa:** Opción para agrandar el mapa y marcar la ubicación con precisión en Formosa Capital.
+5. **Sin Stock:** No contiene campos de stock (la disponibilidad física se consulta directamente por WhatsApp).
+6. **Sin Negociación ni Regateo:** Los precios son fijos (regular y oferta en cuotas).
+7. **Sin Chat ni Pedidos:** Contacto directo por WhatsApp al número del comercio.
+8. **Sin Calificaciones de Comercios:** Las valoraciones son exclusivamente de 1 a 5 estrellas sobre productos individuales.

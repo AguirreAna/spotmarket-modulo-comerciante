@@ -71,15 +71,16 @@ export default function PerfilComercio({ comercio, onActualizar }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">Rubro</label>
-            <input
-              type="text"
+            <label className="block text-[11px] font-bold uppercase text-[#FFB800] mb-1">Tipo de Comercio</label>
+            <select
               name="tipo_comercio"
               value={form.tipo_comercio}
               onChange={handleChange}
-              required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFB800]"
-            />
+              className="w-full rounded-xl bg-[#070C16] border border-white/10 px-3.5 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-[#FFB800]"
+            >
+              <option value="Minorista">Minorista</option>
+              <option value="Mayorista">Mayorista</option>
+            </select>
           </div>
           <div>
             <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">WhatsApp / Teléfono Directo</label>
