@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../services/api.js';
 import { resolverUrlImagen } from '../../utils/imageUrl.js';
+import { TIPOS_COMERCIO } from '../../constants/categorias.js';
 
 export default function PerfilComercio({ comercio, onActualizar }) {
   const [form, setForm] = useState({
@@ -170,6 +171,11 @@ export default function PerfilComercio({ comercio, onActualizar }) {
               onChange={handleChange}
               className="w-full rounded-xl bg-negro/70 border border-borde px-3.5 py-2.5 text-xs text-blanco font-medium focus:outline-none focus:border-amarillo"
             >
+              {TIPOS_COMERCIO.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
               <option value="Minorista">Minorista</option>
               <option value="Mayorista">Mayorista</option>
             </select>

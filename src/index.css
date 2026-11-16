@@ -47,10 +47,6 @@ html.tema-claro body {
   color: var(--color-blanco);
 }
 
-html.tema-claro .leaflet-tile-pane {
-  filter: none !important;
-}
-
 html.tema-claro .leaflet-popup-content-wrapper {
   background: var(--color-gris-oscuro) !important;
   color: var(--color-blanco) !important;
@@ -83,10 +79,6 @@ h1, h2, h3, h4, h5, h6 {
 /* Estilos de mapa */
 .leaflet-tile {
   outline: 1px solid transparent;
-}
-
-.leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.95) saturate(0.7);
 }
 
 .leaflet-container {

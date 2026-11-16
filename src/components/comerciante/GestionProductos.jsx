@@ -169,7 +169,7 @@ export default function GestionProductos({ productos = [], onActualizar }) {
             <thead className="bg-black/30 text-[11px] font-bold uppercase tracking-wider text-gris-azulado border-b border-borde">
               <tr>
                 <th className="px-5 py-3.5">Producto</th>
-                <th className="px-5 py-3.5">Categoría</th>
+                <th className="px-5 py-3.5">Rubro</th>
                 <th className="px-5 py-3.5">Precio Regular</th>
                 <th className="px-5 py-3.5">Última Modificación</th>
                 <th className="px-5 py-3.5">Financiación</th>
@@ -301,7 +301,7 @@ export default function GestionProductos({ productos = [], onActualizar }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">Categoría</label>
+                  <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">Rubro</label>
                   <select
                     value={form.categoria}
                     onChange={(e) => setForm({ ...form, categoria: e.target.value })}

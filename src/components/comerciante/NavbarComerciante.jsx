@@ -1,7 +1,7 @@
 /**
  * Componente: NavbarComerciante
  * Barra superior del panel de control del comerciante con estilo oficial SpotMarket
- * Incluye selector de Modo Oscuro / Modo Claro y sin iconos decorativos.
+ * Incluye selector de tema claro/oscuro y enlace a Inicio.
  */
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -32,7 +32,7 @@ export default function NavbarComerciante({ usuario, onLogout }) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-negro/90 backdrop-blur-md shadow-md">
+    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-negro/95 backdrop-blur-md shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2 group">
@@ -49,13 +49,24 @@ export default function NavbarComerciante({ usuario, onLogout }) {
         </div>
 
         <div className="flex items-center gap-3 sm:gap-4">
-          {/* Selector Modo Oscuro / Modo Claro */}
+          {/* Selector de Modo Oscuro / Claro con icono de Sol/Luna */}
           <button
             type="button"
             onClick={alternarTema}
-            className="shrink-0 rounded-md border border-borde px-2.5 py-1.5 text-xs font-semibold text-gris-azulado hover:text-blanco hover:border-blanco transition cursor-pointer"
+            aria-label={`Cambiar a tema ${tema === 'oscuro' ? 'claro' : 'oscuro'}`}
+            className="shrink-0 cursor-pointer rounded-full p-2 text-gris-azulado transition hover:text-amarillo"
+            title={tema === 'oscuro' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           >
-            {tema === 'oscuro' ? 'Modo Claro' : 'Modo Oscuro'}
+            {tema === 'oscuro' ? (
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="5" />
+                <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            )}
           </button>
 
           <div className="text-right hidden sm:block">
