@@ -1,10 +1,10 @@
 /**
  * Página: PanelPage
  * Dashboard centralizado para el comerciante:
- * - Resumen general
- * - Gestión de catálogo de productos (CRUD)
- * - Ofertas vigentes
- * - Configuración del local y contacto
+ * - 1) Métricas / Resumen: KPIs, ranking de productos más solicitados/vistos y valoraciones de clientes.
+ * - 2) Gestión de Catálogo (CRUD): Alta, edición, eliminación de productos con foto (sin stock ni regateo).
+ * - 3) Gestión de Ofertas Temporales: Crear, editar, pausar promociones (sincronizadas con Inicio).
+ * - 4) Perfil del Comercio: WhatsApp comercial, teléfono, horario de atención, tipo (Minorista/Mayorista) y dirección.
  */
 import { useState, useEffect, useCallback } from 'react';
 import NavbarComerciante from '../components/comerciante/NavbarComerciante.jsx';
@@ -22,22 +22,67 @@ const TABS = [
 ];
 
 export default function PanelPage({ usuario, onLogout }) {
-  const [tabActiva, setTabActiva] = useState('productos');
+  const [tabActiva, setTabActiva] = useState('resumen');
   const [comercio, setComercio] = useState(null);
+  const [productos, setProductos] = useState([]);
+  const [ofertas, setOfertas] = useState([]);
+  const [resumenVal, setResumenVal] = useState(null);
+  const [masBuscados, setMasBuscados] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   const cargarDatos = useCallback(async () => {
+    setCargando(true);
     try {
-      if (!usuario?.comercioId) {
-        // Intentar recuperar sesión desde el backend
-        const resMe = await api('/auth/me');
-        if (resMe.usuario?.comercioId) {
-          const resC = await api(`/comercios/${resMe.usuario.comercioId}`);
-          setComercio(resC.comercio);
+      // 1) Cargar datos del comercio actual autenticado
+      let datosComercio = null;
+      try {
+        const resMiComercio = await api('/comercios/mi-comercio');
+        if (resMiComercio?.comercio) {
+          datosComercio = resMiComercio.comercio;
         }
-      } else {
-        const resC = await api(`/comercios/${usuario.comercioId}`);
-        setComercio(resC.comercio);
+      } catch {
+        // Fallback si la ruta directa no responde
+        const resMe = await api('/auth/me');
+        const cId = resMe.usuario?.comercioId || usuario?.comercioId;
+        if (cId) {
+          const resC = await api(`/comercios/${cId}`);
+          datosComercio = resC.comercio;
+        }
+      }
+
+      if (datosComercio) {
+        setComercio(datosComercio);
+        setProductos(datosComercio.productos || []);
+      }
+
+      // 2) Ofertas vigentes del comerciante
+      try {
+        const resOfertas = await api('/ofertas/mis-ofertas');
+        if (resOfertas?.ofertas) {
+          setOfertas(resOfertas.ofertas);
+        }
+      } catch {
+        // fallback
+      }
+
+      // 3) Resumen de valoraciones y opiniones de vecinos
+      try {
+        const resVal = await api('/valoraciones/mi-comercio');
+        if (resVal?.resumen) {
+          setResumenVal(resVal.resumen);
+        }
+      } catch {
+        // fallback
+      }
+
+      // 4) Productos más buscados e interactuados en la plataforma
+      try {
+        const resTop = await api('/comercios/mas-buscados');
+        if (resTop?.productos) {
+          setMasBuscados(resTop.productos);
+        }
+      } catch {
+        // fallback
       }
     } catch (err) {
       console.warn('Error al cargar datos del comercio:', err.message);
@@ -50,8 +95,10 @@ export default function PanelPage({ usuario, onLogout }) {
     cargarDatos();
   }, [cargarDatos]);
 
-  const productos = comercio?.productos || [];
-  const ofertasActivas = productos.flatMap((p) => p.ofertas || []).length;
+  const ofertasVigentes = ofertas.filter(
+    (o) => new Date(o.fecha_fin) >= new Date()
+  ).length;
+
   const vistasTotales = productos.reduce((acc, p) => acc + (p.vistas || 0), 0);
 
   return (
@@ -71,7 +118,9 @@ export default function PanelPage({ usuario, onLogout }) {
               </span>
             </div>
             <p className="text-xs text-gray-400 mt-1">
-              📍 {comercio?.direccion || 'Formosa Capital'} · {comercio?.tipo_comercio || 'Comercio barrial'} · WhatsApp: {comercio?.telefono || 'No especificado'}
+              📍 {comercio?.direccion || 'Formosa Capital'} · {comercio?.tipo_comercio || 'Minorista'}
+              {comercio?.whatsapp ? ` · WhatsApp: ${comercio.whatsapp}` : (comercio?.telefono ? ` · Tel: ${comercio.telefono}` : '')}
+              {comercio?.horario_atencion ? ` · Horario: ${comercio.horario_atencion}` : ''}
             </p>
           </div>
 
@@ -83,7 +132,7 @@ export default function PanelPage({ usuario, onLogout }) {
                 onClick={() => setTabActiva(t.id)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                   tabActiva === t.id
-                    ? 'bg-[#FFB800] text-black shadow-lg'
+                    ? 'bg-[#FFB800] text-black shadow-lg scale-[1.02]'
                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -95,16 +144,20 @@ export default function PanelPage({ usuario, onLogout }) {
         </div>
 
         {cargando ? (
-          <div className="py-20 text-center text-gray-400 text-sm">
-            Cargando información del comercio...
+          <div className="py-20 text-center text-gray-400 text-sm flex items-center justify-center gap-3">
+            <div className="w-5 h-5 border-2 border-[#FFB800] border-t-transparent rounded-full animate-spin"></div>
+            <span>Cargando panel de gestión comercial...</span>
           </div>
         ) : (
           <div>
             {tabActiva === 'resumen' && (
               <ResumenDashboard
                 productos={productos}
-                ofertasActivas={ofertasActivas}
+                ofertasActivas={ofertasVigentes}
                 vistasTotales={vistasTotales}
+                resumenVal={resumenVal}
+                masBuscados={masBuscados}
+                onIrATab={(tabId) => setTabActiva(tabId)}
               />
             )}
 
@@ -118,6 +171,7 @@ export default function PanelPage({ usuario, onLogout }) {
             {tabActiva === 'ofertas' && (
               <GestionOfertas
                 productos={productos}
+                ofertas={ofertas}
                 onActualizar={cargarDatos}
               />
             )}
