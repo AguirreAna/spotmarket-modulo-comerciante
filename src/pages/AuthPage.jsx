@@ -6,6 +6,7 @@ import { useState } from 'react';
 import LoginForm from '../components/auth/LoginForm.jsx';
 import RegisterComercioForm from '../components/auth/RegisterComercioForm.jsx';
 import LogoNavbar from '../assets/LogoNavbar.svg';
+import LogoCompleto from '../assets/Logo.svg';
 
 export default function AuthPage({ onLoginExitoso }) {
   const [pestana, setPestana] = useState('login'); // 'login' | 'registro-comercio'
@@ -13,8 +14,8 @@ export default function AuthPage({ onLoginExitoso }) {
   return (
     <div className="min-h-screen bg-[#070C16] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-red-600/20 border border-red-500/40 p-2 shadow-lg">
-          <img src={LogoNavbar} alt="SpotMarket" className="w-full h-full object-contain" />
+        <div className="w-20 h-20 mx-auto rounded-2xl bg-[#0B1220] border border-white/15 p-1 flex items-center justify-center shadow-2xl">
+          <img src={LogoCompleto} alt="SpotMarket Logo" className="w-full h-full object-contain" />
         </div>
         <h2 className="text-3xl font-black tracking-tight text-white">
           Spot<span className="text-[#FFB800]">Market</span>

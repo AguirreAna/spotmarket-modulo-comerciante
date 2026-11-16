@@ -154,7 +154,6 @@ export default function PanelPage({ usuario, onLogout }) {
               <ResumenDashboard
                 productos={productos}
                 ofertasActivas={ofertasVigentes}
-                vistasTotales={vistasTotales}
                 resumenVal={resumenVal}
                 masBuscados={masBuscados}
                 onIrATab={(tabId) => setTabActiva(tabId)}

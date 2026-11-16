@@ -1,23 +1,27 @@
 /**
  * Componente: NavbarComerciante
- * Barra superior del panel de control del comerciante.
+ * Barra superior del panel de control del comerciante con Logo oficial.
  */
 import { Link } from 'react-router-dom';
+import LogoCompleto from '../../assets/Logo.svg';
 
 export default function NavbarComerciante({ usuario, onLogout }) {
   return (
-    <header className="bg-[#0B111E] border-b border-white/10 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="bg-[#0B111E] border-b border-white/10 sticky top-0 z-40 shadow-md">
+      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-1.5 font-black text-lg">
-            <span className="text-red-500">📍</span>
-            <span className="text-white">Spot</span>
-            <span className="text-[#FFB800]">Market</span>
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="h-10 w-10 rounded-xl bg-[#0B1220] border border-white/10 flex items-center justify-center p-0.5 group-hover:scale-105 transition-transform overflow-hidden shadow">
+              <img src={LogoCompleto} alt="Spot Market Logo" className="w-full h-full object-contain" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-baseline font-black tracking-tight text-lg leading-none">
+                <span className="text-white">Spot</span>
+                <span className="text-[#FFB800] ml-0.5">Market</span>
+              </div>
+              <span className="text-[9px] tracking-widest text-gray-400 uppercase font-semibold">Panel de Comerciante</span>
+            </div>
           </Link>
-          <span className="text-gray-600 hidden sm:inline">|</span>
-          <span className="text-xs font-bold text-gray-300 hidden sm:inline">
-            Panel de Administración
-          </span>
         </div>
 
         <div className="flex items-center gap-4">

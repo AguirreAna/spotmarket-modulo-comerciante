@@ -1,9 +1,11 @@
 /**
  * Componente: PerfilComercio
- * Permite al comerciante actualizar su información de contacto (WhatsApp/teléfono), dirección en Formosa, horario de atención y nombre del local.
+ * Permite al comerciante visualizar sus fotos de fachada (cargadas al registrarse),
+ * y actualizar su información de contacto (WhatsApp/teléfono), dirección en Formosa, horario de atención y nombre del local.
  */
 import { useState, useEffect } from 'react';
 import { api } from '../../services/api.js';
+import { resolverUrlImagen } from '../../utils/imageUrl.js';
 
 export default function PerfilComercio({ comercio, onActualizar }) {
   const [form, setForm] = useState({
@@ -15,6 +17,7 @@ export default function PerfilComercio({ comercio, onActualizar }) {
     direccion: comercio?.direccion || '',
     email: comercio?.email || ''
   });
+  const [nuevasFotos, setNuevasFotos] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
@@ -44,11 +47,22 @@ export default function PerfilComercio({ comercio, onActualizar }) {
     setMensaje('');
 
     try {
-      await api(`/comercios/${comercio.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(form)
-      });
+      if (nuevasFotos.length > 0) {
+        const fd = new FormData();
+        Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+        nuevasFotos.forEach((f) => fd.append('fotos', f));
+        await api(`/comercios/${comercio.id}`, {
+          method: 'PUT',
+          body: fd
+        });
+      } else {
+        await api(`/comercios/${comercio.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(form)
+        });
+      }
       setMensaje('Datos del comercio actualizados correctamente.');
+      setNuevasFotos([]);
       if (onActualizar) onActualizar();
     } catch (err) {
       alert(`Error al actualizar perfil: ${err.message}`);
@@ -64,7 +78,7 @@ export default function PerfilComercio({ comercio, onActualizar }) {
           <span>🏪</span> Perfil y Canales de Contacto Directo
         </h3>
         <p className="text-xs text-gray-400 mt-1">
-          Esta información se muestra públicamente a los vecinos en el mapa barrial y en las fichas de tus productos.
+          Los vecinos verán estos datos para ubicar tu negocio y enviarte mensajes.
         </p>
       </div>
 
@@ -125,7 +139,6 @@ export default function PerfilComercio({ comercio, onActualizar }) {
               placeholder="Ej: +54 9 370 412-3456"
               className="w-full rounded-xl bg-white/5 border border-emerald-500/30 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-400"
             />
-            <p className="text-[10px] text-gray-500 mt-1">Permite a los vecinos consultarte directamente por WhatsApp sin intermediarios.</p>
           </div>
           <div>
             <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">Horario de Atención</label>
@@ -137,7 +150,6 @@ export default function PerfilComercio({ comercio, onActualizar }) {
               placeholder="Ej: Lun a Sáb 8 a 13 y 17 a 21 hs"
               className="w-full rounded-xl bg-white/5 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFB800]"
             />
-            <p className="text-[10px] text-gray-500 mt-1">Horarios en los que los clientes pueden visitarte o hacer pedidos.</p>
           </div>
         </div>
 
@@ -152,6 +164,58 @@ export default function PerfilComercio({ comercio, onActualizar }) {
             required
             className="w-full rounded-xl bg-white/5 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFB800]"
           />
+        </div>
+
+        {/* ── FOTOGRAFÍAS DEL LOCAL COMERCIAL CARGADAS EN EL REGISTRO ── */}
+        <div className="pt-4 border-t border-white/10 space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="block text-[11px] font-bold uppercase text-[#FFB800]">
+              📸 Fotografías del Local Comercial ({comercio?.fotos?.length || 0})
+            </label>
+            <span className="text-[10px] text-gray-400">Fotos de fachada subidas al registrarse</span>
+          </div>
+
+          {comercio?.fotos && comercio.fotos.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {comercio.fotos.map((f, idx) => (
+                <div
+                  key={f.id || idx}
+                  className="relative group rounded-xl overflow-hidden border border-white/15 bg-black/40 aspect-square shadow hover:border-[#FFB800] transition-colors"
+                >
+                  <img
+                    src={resolverUrlImagen(f.url)}
+                    alt={`Fachada ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                  <span className="absolute bottom-1.5 left-1.5 bg-black/80 text-white text-[9px] px-2 py-0.5 rounded font-bold">
+                    Foto #{idx + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 italic bg-black/20 p-3 rounded-xl border border-white/5">
+              Aún no tenés fotos de fachada registradas. Podés agregar fotos a continuación.
+            </p>
+          )}
+
+          <div>
+            <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">
+              Subir más fotos de fachada o local
+            </label>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => setNuevasFotos(Array.from(e.target.files || []))}
+              className="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#FFB800] file:text-black hover:file:bg-yellow-400 cursor-pointer"
+            />
+            {nuevasFotos.length > 0 && (
+              <p className="text-[10px] text-emerald-400 mt-1 font-semibold">
+                ✓ {nuevasFotos.length} nueva(s) foto(s) lista(s) para subir al guardar.
+              </p>
+            )}
+          </div>
         </div>
 
         <button

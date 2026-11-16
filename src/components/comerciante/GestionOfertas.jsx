@@ -95,7 +95,10 @@ export default function GestionOfertas({ productos = [], ofertas = [], onActuali
       cancelarEdicion();
       if (onActualizar) onActualizar();
     } catch (err) {
-      setError(err.message || 'Error al guardar la oferta.');
+      const msg = err.detalles?.length
+        ? err.detalles.map((d) => d.mensaje).join(', ')
+        : (err.message || 'Error al guardar la oferta.');
+      setError(msg);
     } finally {
       setCargando(false);
     }

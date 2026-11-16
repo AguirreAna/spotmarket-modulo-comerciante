@@ -1,7 +1,7 @@
 /**
  * Componente: ResumenDashboard
  * Métricas clave del comercio:
- * - 4 KPIs: productos activos, ofertas vigentes, visitas comunitarias y valoración media de productos.
+ * - 3 KPIs: productos activos, ofertas vigentes y valoraciones de los clientes.
  * - Ranking de productos más solicitados, vistos y mejor valorados.
  * - Listado de opiniones y valoraciones recibidas de los clientes de Formosa.
  */
@@ -10,7 +10,6 @@ import { resolverUrlImagen } from '../../utils/imageUrl.js';
 export default function ResumenDashboard({
   productos = [],
   ofertasActivas = 0,
-  vistasTotales = 0,
   resumenVal = null,
   masBuscados = [],
   onIrATab
@@ -20,8 +19,8 @@ export default function ResumenDashboard({
 
   return (
     <div className="space-y-8">
-      {/* ── 4 TARJETAS KPI ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ── 3 TARJETAS KPI: PRODUCTOS ACTIVOS, OFERTAS VIGENTES Y VALORACIONES ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-5 shadow-lg space-y-2">
           <div className="flex items-center justify-between text-gray-400 text-xs font-bold uppercase tracking-wider">
             <span>Productos Activos</span>
@@ -38,7 +37,7 @@ export default function ResumenDashboard({
               </button>
             )}
           </div>
-          <p className="text-[11px] text-emerald-400 font-medium">Publicados en góndola barrial</p>
+          <p className="text-[11px] text-emerald-400 font-medium mt-1">Publicados en góndola barrial</p>
         </div>
 
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-5 shadow-lg space-y-2">
@@ -57,33 +56,29 @@ export default function ResumenDashboard({
               </button>
             )}
           </div>
-          <p className="text-[11px] text-yellow-300/80 font-medium">Descuentos activos en Inicio</p>
+          <p className="text-[11px] text-yellow-300/80 font-medium mt-1">Descuentos activos en Inicio</p>
         </div>
 
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-5 shadow-lg space-y-2">
           <div className="flex items-center justify-between text-gray-400 text-xs font-bold uppercase tracking-wider">
-            <span>Vistas Comunitarias</span>
-            <span className="text-base">👁️</span>
-          </div>
-          <p className="text-3xl font-black text-blue-400">{vistasTotales}</p>
-          <p className="text-[11px] text-blue-300/80 font-medium">Interacciones de clientes</p>
-        </div>
-
-        <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-5 shadow-lg space-y-2">
-          <div className="flex items-center justify-between text-gray-400 text-xs font-bold uppercase tracking-wider">
-            <span>Valoración Media</span>
+            <span>Valoraciones</span>
             <span className="text-base">⭐</span>
           </div>
-          <p className="text-3xl font-black text-amber-300">
-            {promedioEstrellas != null ? `${promedioEstrellas} ★` : '—'}
-          </p>
-          <p className="text-[11px] text-gray-400 font-medium">
-            {resumenVal?.total ? `Basado en ${resumenVal.total} reseñas` : 'Aún sin calificaciones'}
+          <div className="flex items-baseline justify-between">
+            <p className="text-3xl font-black text-[#FFB800]">
+              {resumenVal?.total != null ? resumenVal.total : 0}
+            </p>
+            <span className="text-[10px] text-gray-400 font-bold">
+              {promedioEstrellas != null ? `${promedioEstrellas} ★ promedio` : 'Sin reseñas'}
+            </span>
+          </div>
+          <p className="text-[11px] text-gray-400 font-medium mt-1">
+            {resumenVal?.total ? `Basado en ${resumenVal.total} opiniones recibidas` : 'Aún sin calificaciones'}
           </p>
         </div>
       </div>
 
-      {/* ── SECCIÓN DOBLE: PRODUCTOS MÁS SOLICITADOS / VISTOS Y VALORACIONES RECIBIDAS ── */}
+      {/* ── SECCIÓN DOBLE: PRODUCTOS MÁS SOLICITADOS / VISTOS Y VALORACIONES ── */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Productos más solicitados y vistos */}
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
@@ -135,11 +130,11 @@ export default function ResumenDashboard({
           </div>
         </div>
 
-        {/* Opiniones y valoraciones recibidas de los vecinos */}
+        {/* Opiniones y valoraciones recibidas de los clientes */}
         <div className="bg-[#111A2E] border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <span>💬</span> Valoraciones recibidas de los clientes
+              <span>💬</span> Valoraciones
             </h3>
             <span className="text-xs text-[#FFB800] font-bold">
               {promedioEstrellas ? `${promedioEstrellas} de 5 estrellas` : 'Sin opiniones'}
