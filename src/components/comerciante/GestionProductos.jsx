@@ -121,40 +121,35 @@ export default function GestionProductos({ productos = [], onActualizar }) {
     }
   };
 
-  // Filtrado de la tabla
+  // Filtrado de la tabla (buscador por nombre o categoría de producto)
   const productosFiltrados = productos.filter((p) => {
-    const coincideTexto = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideCat = filtroCategoria ? p.categoria === filtroCategoria : true;
-    return coincideTexto && coincideCat;
+    const q = busqueda.toLowerCase().trim();
+    if (!q) return true;
+    const matchNombre = p.nombre ? p.nombre.toLowerCase().includes(q) : false;
+    const matchCat = p.categoria ? p.categoria.toLowerCase().includes(q) : false;
+    return matchNombre || matchCat;
   });
 
   return (
     <div className="space-y-6">
-      {/* Barra de acciones */}
+      {/* Barra de acciones: Buscador (reemplaza el desplegable) y botón nuevo */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1 max-w-lg">
+        <div className="relative flex-1 max-w-md">
           <input
             type="text"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar entre tus productos..."
-            className="flex-1 rounded-xl bg-white/5 border border-white/10 px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
+            placeholder="Buscar por nombre o categoría de producto..."
+            className="w-full rounded-xl bg-negro/70 border border-borde px-4 py-2.5 pl-10 text-xs text-blanco placeholder:text-gris-azulado focus:outline-none focus:border-amarillo transition shadow-sm"
           />
-          <select
-            value={filtroCategoria}
-            onChange={(e) => setFiltroCategoria(e.target.value)}
-            className="rounded-xl bg-[#111A2E] border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
-          >
-            <option value="">Todas las categorías</option>
-            {CATEGORIAS.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+          <svg className="w-4 h-4 text-gris-azulado absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
 
         <button
           onClick={abrirCrear}
-          className="bg-[#FFB800] hover:bg-[#FFA500] text-black font-extrabold text-sm px-5 py-2.5 rounded-xl shadow-lg transition-transform hover:scale-105 flex items-center justify-center gap-2"
+          className="fondo-dorado text-negro font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-lg transition-transform hover:brightness-110 flex items-center justify-center gap-2"
         >
           <span>＋</span> Publicar Nuevo Producto
         </button>
@@ -167,32 +162,32 @@ export default function GestionProductos({ productos = [], onActualizar }) {
         </div>
       )}
 
-      {/* Tabla de Productos */}
-      <div className="bg-[#111A2E] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+      {/* Tabla de Productos (Sin Precio Oferta, con Última Modificación) */}
+      <div className="bg-gris-oscuro border border-borde rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-300">
-            <thead className="bg-black/30 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-b border-white/10">
+          <table className="w-full text-left text-xs text-gris-azulado">
+            <thead className="bg-black/30 text-[11px] font-bold uppercase tracking-wider text-gris-azulado border-b border-borde">
               <tr>
                 <th className="px-5 py-3.5">Producto</th>
                 <th className="px-5 py-3.5">Categoría</th>
                 <th className="px-5 py-3.5">Precio Regular</th>
-                <th className="px-5 py-3.5">Precio Oferta</th>
+                <th className="px-5 py-3.5">Última Modificación</th>
                 <th className="px-5 py-3.5">Financiación</th>
                 <th className="px-5 py-3.5 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-borde/40">
               {productosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-8 text-gray-500 text-xs">
+                  <td colSpan="6" className="text-center py-8 text-gris-azulado text-xs">
                     No tenés productos cargados con ese criterio. Hacé clic en "Publicar Nuevo Producto".
                   </td>
                 </tr>
               ) : (
                 productosFiltrados.map((prod) => (
                   <tr key={prod.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-5 py-4 font-semibold text-white flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 text-xl">
+                    <td className="px-5 py-4 font-semibold text-blanco flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-negro/50 border border-borde flex items-center justify-center overflow-hidden flex-shrink-0 text-xl">
                         {prod.imagen_url ? (
                           <img
                             src={resolverUrlImagen(prod.imagen_url)}
@@ -204,32 +199,39 @@ export default function GestionProductos({ productos = [], onActualizar }) {
                         )}
                       </div>
                       <div>
-                        <p className="truncate max-w-xs">{prod.nombre}</p>
+                        <p className="truncate max-w-xs text-blanco">{prod.nombre}</p>
                         {prod.destacado && (
-                          <span className="text-[10px] text-[#FFB800] font-bold">★ Destacado en Inicio</span>
+                          <span className="text-[10px] text-amarillo font-bold">★ Destacado en Inicio</span>
                         )}
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-xs text-gray-300">{prod.categoria || 'General'}</td>
-                    <td className="px-5 py-4 font-bold text-white">
+                    <td className="px-5 py-4 text-xs text-gris-azulado">{prod.categoria || 'General'}</td>
+                    <td className="px-5 py-4 font-bold text-blanco">
                       ${Number(prod.precio).toLocaleString('es-AR')}
                     </td>
-                    <td className="px-5 py-4 font-bold text-[#EF4444]">
-                      {prod.precio_oferta ? `$${Number(prod.precio_oferta).toLocaleString('es-AR')}` : '—'}
+                    <td className="px-5 py-4 text-blanco whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-blanco">
+                          {prod.updatedAt ? new Date(prod.updatedAt).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Reciente'}
+                        </span>
+                        <span className="text-[10px] text-gris-azulado">
+                          {prod.updatedAt ? new Date(prod.updatedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) + ' hs' : ''}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-5 py-4 text-xs text-[#FFB800] font-medium">
+                    <td className="px-5 py-4 text-xs text-verde font-medium">
                       {prod.cuotas || 'Contado'}
                     </td>
                     <td className="px-5 py-4 text-right space-x-2">
                       <button
                         onClick={() => abrirEditar(prod)}
-                        className="px-3 py-1 rounded-lg text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-200 border border-white/10"
+                        className="px-3 py-1 rounded-lg text-xs font-bold text-amarillo bg-amarillo/10 hover:bg-amarillo/20 border border-amarillo/20 transition"
                       >
                         Editar
                       </button>
                       <button
-                        onClick={() => handleEliminar(prod.id, prod.nombre)}
-                        className="px-3 py-1 rounded-lg text-xs font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
+                        onClick={() => eliminarProducto(prod.id, prod.nombre)}
+                        className="px-3 py-1 rounded-lg text-xs font-bold text-rojo bg-rojo/10 hover:bg-rojo/20 border border-rojo/20 transition"
                       >
                         Eliminar
                       </button>

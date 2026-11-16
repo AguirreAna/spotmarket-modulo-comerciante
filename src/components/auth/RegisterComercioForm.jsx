@@ -1,16 +1,40 @@
 /**
  * Componente: RegisterComercioForm
- * Formulario de alta para comerciantes locales de Formosa Capital.
- * Estructurado en 3 secciones claras:
- * 1) Datos comerciales: Tipo de comercio (Minorista / Mayorista) y Categoría de productos (27 opciones A-Z).
- * 2) Ubicación: Coordenadas y mapa de Formosa con opción de Agrandar Pantalla Completa.
- * 3) Fotografías: Carga y previsualización inmediata de fotos de fachada.
+ * Formulario de alta dual para SpotMarket (Formosa Capital):
+ * Permite registrar tanto a Vecinos/Usuarios (Consumidores) como a Comerciantes Locales.
+ * - Si es Comerciante: Datos + Tipo Minorista/Mayorista + 27 Rubros A-Z + Mapa con Agrandar Pantalla + Fotos de Fachada.
+ * - Si es Usuario/Vecino: Registro rápido con nombre, email y contraseña.
  */
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { api } from '../../services/api.js';
 import { TIPOS_COMERCIO, CATEGORIAS_PRODUCTOS } from '../../constants/categorias.js';
 
-export default function RegisterComercioForm({ onRegistroExitoso }) {
+const icono = new L.Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+});
+
+const FORMOSA = [-26.1849, -58.1731];
+
+function ClickMapa({ onPick }) {
+  useMapEvents({
+    click(e) {
+      onPick(e.latlng.lat, e.latlng.lng);
+    }
+  });
+  return null;
+}
+
+export default function RegisterComercioForm({ onRegistroExitoso, onVolverLogin }) {
+  const [rolRegistro, setRolRegistro] = useState('comerciante'); // 'comerciante' | 'usuario'
+
+  // Form Comerciante
   const [form, setForm] = useState({
     nombre: '',
     nombre_local: '',
@@ -23,16 +47,29 @@ export default function RegisterComercioForm({ onRegistroExitoso }) {
     latitud: '-26.1849',
     longitud: '-58.1731'
   });
-
   const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState(['Almacén']);
   const [fotos, setFotos] = useState([]);
   const [mapaAgrandado, setMapaAgrandado] = useState(false);
+
+  // Form Vecino / Usuario
+  const [formUsuario, setFormUsuario] = useState({
+    nombre: '',
+    email: '',
+    password: '',
+    confirmarPassword: ''
+  });
+
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleChangeUsuario = (e) => {
+    const { name, value } = e.target;
+    setFormUsuario((prev) => ({ ...prev, [name]: value }));
   };
 
   const toggleCategoria = (cat) => {
@@ -51,10 +88,63 @@ export default function RegisterComercioForm({ onRegistroExitoso }) {
   };
 
   const quitarFoto = (index) => {
-    setFotos((prev) => prev.filter((_, i) => i !== index));
+    setFotos((prev) => {
+      URL.revokeObjectURL(prev[index]?.previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
-  const handleSubmit = async (e) => {
+  useEffect(() => () => fotos.forEach((f) => URL.revokeObjectURL(f.previewUrl)), [fotos]);
+
+  const posicion = useMemo(() => {
+    if (form.latitud && form.longitud) {
+      return [parseFloat(form.latitud), parseFloat(form.longitud)];
+    }
+    return FORMOSA;
+  }, [form.latitud, form.longitud]);
+
+  // Submit Usuario / Vecino
+  const handleSubmitUsuario = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (formUsuario.password !== formUsuario.confirmarPassword) {
+      setError('Las contraseñas ingresadas no coinciden.');
+      return;
+    }
+    if (formUsuario.password.length < 6) {
+      setError('La contraseña debe tener como mínimo 6 caracteres.');
+      return;
+    }
+
+    setCargando(true);
+    try {
+      const res = await api('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          nombre: formUsuario.nombre.trim(),
+          email: formUsuario.email.trim(),
+          password: formUsuario.password
+        })
+      });
+
+      localStorage.setItem('isLogged', 'true');
+      localStorage.setItem('usuarioSpotMarket', JSON.stringify(res.usuario));
+
+      if (onRegistroExitoso) {
+        onRegistroExitoso(res.usuario);
+      } else {
+        window.location.href = '/';
+      }
+    } catch (err) {
+      setError(err.message || 'Error al procesar el registro de usuario.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Submit Comerciante
+  const handleSubmitComercio = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -62,19 +152,16 @@ export default function RegisterComercioForm({ onRegistroExitoso }) {
       setError('Las contraseñas ingresadas no coinciden.');
       return;
     }
-
     if (form.password.length < 6) {
       setError('La contraseña debe tener como mínimo 6 caracteres.');
       return;
     }
-
     if (categoriasSeleccionadas.length === 0) {
       setError('Seleccioná al menos una categoría de productos.');
       return;
     }
 
     setCargando(true);
-
     try {
       const formData = new FormData();
       formData.append('nombre', form.nombre);
@@ -99,354 +186,402 @@ export default function RegisterComercioForm({ onRegistroExitoso }) {
       });
 
       localStorage.setItem('isLogged', 'true');
-      localStorage.setItem('rol', 'comerciante');
-      localStorage.setItem('usuario', JSON.stringify(res.usuario));
+      localStorage.setItem('usuarioSpotMarket', JSON.stringify(res.usuario));
 
       if (onRegistroExitoso) {
         onRegistroExitoso(res.usuario);
+      } else {
+        window.location.href = '/panel';
       }
     } catch (err) {
-      console.error(err);
-      setError(err.data?.mensaje || err.message || 'Error al conectar con el servidor.');
+      setError(err.message || 'Error al procesar el registro del comercio.');
     } finally {
       setCargando(false);
     }
   };
 
+  const inputClass =
+    'w-full rounded-xl bg-negro/70 border border-borde px-3.5 py-2.5 text-xs text-blanco placeholder:text-gris-azulado/60 focus:outline-none focus:border-amarillo transition';
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* ── SECCIÓN 1: DATOS COMERCIALES ── */}
-      <div className="rounded-2xl bg-[#111A2E] border border-white/10 p-5 sm:p-6 shadow-xl space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-white/10">
-          <span className="h-6 w-6 rounded-full bg-[#FFB800] text-black font-extrabold text-xs flex items-center justify-center">
-            1
-          </span>
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-            Datos del Local Comercial
-          </h3>
-        </div>
+    <div className="space-y-6">
+      {/* SELECTOR DUAL DE REGISTRO */}
+      <div className="rounded-xl bg-negro/50 border border-borde p-1 flex gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setRolRegistro('comerciante');
+            setError('');
+          }}
+          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            rolRegistro === 'comerciante'
+              ? 'fondo-dorado text-negro shadow'
+              : 'text-gris-azulado hover:text-blanco'
+          }`}
+        >
+          <span>🏪</span>
+          <span>Soy Comerciante</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setRolRegistro('usuario');
+            setError('');
+          }}
+          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            rolRegistro === 'usuario'
+              ? 'fondo-dorado text-negro shadow'
+              : 'text-gris-azulado hover:text-blanco'
+          }`}
+        >
+          <span>👤</span>
+          <span>Soy Vecino / Usuario</span>
+        </button>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">
-              Nombre de Fantasía del Local
-            </label>
-            <input
-              type="text"
-              name="nombre_local"
-              value={form.nombre_local}
-              onChange={handleChange}
-              placeholder="Ej: Almacén Don Pepe"
-              required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-bold uppercase text-[#FFB800] mb-1">
-              Tipo de comercio
-            </label>
-            <select
-              name="tipo_comercio"
-              value={form.tipo_comercio}
-              onChange={handleChange}
-              className="w-full rounded-xl bg-[#070C16] border border-white/10 px-3 py-2 text-sm text-white font-medium focus:outline-none focus:border-[#FFB800]"
-            >
-              {TIPOS_COMERCIO.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
+      {error && (
+        <div className="bg-rojo/15 border border-rojo/40 text-rojo text-xs p-3.5 rounded-xl flex items-center gap-2">
+          <span>⚠️</span>
+          <span>{error}</span>
         </div>
+      )}
 
-        {/* CATEGORÍA DE PRODUCTOS (27 OPCIONES EN ORDEN ALFABÉTICO) */}
-        <div className="pt-2">
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-[11px] font-bold uppercase text-[#FFB800]">
-              Categoría de productos ({categoriasSeleccionadas.length} seleccionadas)
-            </label>
-            <span className="text-[10px] text-gray-400">Orden alfabético A-Z</span>
-          </div>
-          <p className="text-xs text-gray-400 mb-2">
-            Marcá los rubros de productos que ofrecés a tus clientes:
-          </p>
-          <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto p-2 rounded-xl bg-black/20 border border-white/5">
-            {CATEGORIAS_PRODUCTOS.map((cat) => {
-              const activo = categoriasSeleccionadas.includes(cat);
-              return (
-                <button
-                  type="button"
-                  key={cat}
-                  onClick={() => toggleCategoria(cat)}
-                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
-                    activo
-                      ? 'bg-[#FFB800] text-black font-bold shadow'
-                      : 'bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10'
-                  }`}
-                >
-                  {activo ? '✓ ' : '+ '} {cat}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+      {/* REGISTRO DE VECINO */}
+      {rolRegistro === 'usuario' ? (
+        <form onSubmit={handleSubmitUsuario} className="space-y-4">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">
-              Nombre del Responsable
+            <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+              Nombre completo
             </label>
             <input
               type="text"
               name="nombre"
-              value={form.nombre}
-              onChange={handleChange}
-              placeholder="Tu nombre y apellido"
+              value={formUsuario.nombre}
+              onChange={handleChangeUsuario}
+              placeholder="Juan Pérez"
               required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
+              className={inputClass}
             />
           </div>
-          <div>
-            <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">
-              Teléfono / WhatsApp de contacto
-            </label>
-            <input
-              type="text"
-              name="telefono"
-              value={form.telefono}
-              onChange={handleChange}
-              placeholder="3704-123456"
-              required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
-            />
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">
-              Correo Electrónico
+            <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+              Correo electrónico
             </label>
             <input
               type="email"
               name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="comercio@spotmarket.com"
+              value={formUsuario.email}
+              onChange={handleChangeUsuario}
+              placeholder="juan@ejemplo.com"
               required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
+              className={inputClass}
             />
           </div>
-          <div>
-            <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">
-              Contraseña
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Mínimo 6 caracteres"
-              required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">
-              Repetir Contraseña
-            </label>
-            <input
-              type="password"
-              name="confirmarPassword"
-              value={form.confirmarPassword}
-              onChange={handleChange}
-              placeholder="Confirmar contraseña"
-              required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* ── SECCIÓN 2: UBICACIÓN Y MAPA CON PANTALLA COMPLETA ── */}
-      <div className="rounded-2xl bg-[#111A2E] border border-white/10 p-5 sm:p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <span className="h-6 w-6 rounded-full bg-[#FFB800] text-black font-extrabold text-xs flex items-center justify-center">
-              2
-            </span>
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              Ubicación en Formosa Capital
-            </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formUsuario.password}
+                onChange={handleChangeUsuario}
+                placeholder="Mínimo 6 caracteres"
+                required
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                Confirmar contraseña
+              </label>
+              <input
+                type="password"
+                name="confirmarPassword"
+                value={formUsuario.confirmarPassword}
+                onChange={handleChangeUsuario}
+                placeholder="Repetir contraseña"
+                required
+                className={inputClass}
+              />
+            </div>
           </div>
+
           <button
-            type="button"
-            onClick={() => setMapaAgrandado(true)}
-            className="text-xs font-bold text-[#FFB800] bg-[#FFB800]/10 border border-[#FFB800]/30 px-3 py-1 rounded-lg hover:bg-[#FFB800]/20 transition flex items-center gap-1.5"
+            type="submit"
+            disabled={cargando}
+            className="w-full rounded-xl fondo-dorado text-negro font-extrabold py-3 text-sm transition-all shadow-lg hover:brightness-110 disabled:opacity-50 mt-4"
           >
-            <span>⛶</span> Agrandar mapa
+            {cargando ? 'Creando cuenta de vecino...' : 'Completar Registro de Vecino'}
           </button>
-        </div>
+        </form>
+      ) : (
+        /* REGISTRO DE COMERCIANTE */
+        <form onSubmit={handleSubmitComercio} className="space-y-6">
+          {/* SECCIÓN 1: DATOS */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase text-amarillo flex items-center gap-1.5 border-b border-borde pb-1">
+              <span>1.</span> Datos del Comercio
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                  Responsable del comercio
+                </label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={form.nombre}
+                  onChange={handleChange}
+                  placeholder="Juan Pérez"
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-amarillo mb-1">
+                  Nombre del local
+                </label>
+                <input
+                  type="text"
+                  name="nombre_local"
+                  value={form.nombre_local}
+                  onChange={handleChange}
+                  placeholder="Supermercado San Martín"
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                  Tipo de comercio
+                </label>
+                <select
+                  name="tipo_comercio"
+                  value={form.tipo_comercio}
+                  onChange={handleChange}
+                  className={inputClass}
+                >
+                  {TIPOS_COMERCIO.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                  Teléfono / WhatsApp
+                </label>
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={form.telefono}
+                  onChange={handleChange}
+                  placeholder="3704-XXXXXX"
+                  className={inputClass}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                  Correo electrónico
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="comercio@ejemplo.com"
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                  Confirmar contraseña
+                </label>
+                <input
+                  type="password"
+                  name="confirmarPassword"
+                  value={form.confirmarPassword}
+                  onChange={handleChange}
+                  placeholder="Repetir contraseña"
+                  required
+                  className={inputClass}
+                />
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-[11px] font-bold uppercase text-gray-300 mb-1">
-            Dirección física del local
-          </label>
-          <input
-            type="text"
-            name="direccion"
-            value={form.direccion}
-            onChange={handleChange}
-            placeholder="Ej: Av. 25 de Mayo 450, Barrio Centro"
-            required
-            className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFB800]"
-          />
-        </div>
+            {/* 27 Categorías de productos */}
+            <div className="pt-2">
+              <label className="block text-[11px] font-bold uppercase text-amarillo mb-1">
+                Categoría de productos ({categoriasSeleccionadas.length} seleccionadas)
+              </label>
+              <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-2 rounded-xl bg-negro/50 border border-borde">
+                {CATEGORIAS_PRODUCTOS.map((cat) => {
+                  const sel = categoriasSeleccionadas.includes(cat);
+                  return (
+                    <button
+                      type="button"
+                      key={cat}
+                      onClick={() => toggleCategoria(cat)}
+                      className={`text-[11px] px-2.5 py-1 rounded-lg border transition ${
+                        sel
+                          ? 'bg-amarillo text-negro border-amarillo font-bold'
+                          : 'bg-white/5 text-gris-azulado border-borde hover:text-blanco'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
 
-        {/* VISTA PREVIA DEL MAPA */}
-        <div className="rounded-xl overflow-hidden border border-white/10 bg-[#070C16] p-4 text-center">
-          <p className="text-xs text-gray-300 font-semibold">
-            Coordenadas: {form.latitud}, {form.longitud}
-          </p>
-          <p className="text-[11px] text-gray-400 mt-1">
-            Podés agrandar el mapa para ubicar tu local exactamente sobre la calle o barrio.
-          </p>
-          <button
-            type="button"
-            onClick={() => setMapaAgrandado(true)}
-            className="mt-3 bg-[#FFB800] hover:bg-yellow-400 text-black font-extrabold text-xs px-4 py-2 rounded-lg transition shadow"
-          >
-            Abrir mapa interactivo de Formosa
-          </button>
-        </div>
-      </div>
+          {/* SECCIÓN 2: UBICACIÓN */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-borde pb-1">
+              <h4 className="text-xs font-bold uppercase text-amarillo flex items-center gap-1.5">
+                <span>2.</span> Ubicación en Formosa Capital
+              </h4>
+              <button
+                type="button"
+                onClick={() => setMapaAgrandado((v) => !v)}
+                className="text-xs font-bold text-amarillo hover:underline"
+              >
+                {mapaAgrandado ? '⤢ Reducir mapa' : '⤢ Agrandar pantalla completa'}
+              </button>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-gris-azulado mb-1">
+                Dirección en Formosa
+              </label>
+              <input
+                type="text"
+                name="direccion"
+                value={form.direccion}
+                onChange={handleChange}
+                placeholder="Ej: Av. 25 de Mayo 450, Centro"
+                required
+                className={inputClass}
+              />
+            </div>
 
-      {/* ── SECCIÓN 3: FOTOS DEL LOCAL CON PREVISUALIZACIÓN ── */}
-      <div className="rounded-2xl bg-[#111A2E] border border-white/10 p-5 sm:p-6 shadow-xl space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-white/10">
-          <span className="h-6 w-6 rounded-full bg-[#FFB800] text-black font-extrabold text-xs flex items-center justify-center">
-            3
-          </span>
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-            Fotografías del Local
-          </h3>
-        </div>
-
-        <label className="block border-2 border-dashed border-white/20 hover:border-[#FFB800] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-white/5">
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleFotos}
-            className="hidden"
-          />
-          <div className="text-2xl mb-1">📷</div>
-          <span className="text-xs font-bold text-white block">
-            Click para subir fotos de la fachada o salón de ventas
-          </span>
-          <span className="text-[11px] text-gray-400 block mt-1">
-            Formatos JPG, PNG o WebP (hasta 8 fotos)
-          </span>
-        </label>
-
-        {/* MINIATURAS DE FOTOS SUBIDAS */}
-        {fotos.length > 0 && (
-          <div>
-            <p className="text-xs font-bold text-[#FFB800] mb-2">
-              Fotos seleccionadas ({fotos.length}):
-            </p>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-              {fotos.map((item, idx) => (
-                <div key={idx} className="relative group rounded-xl overflow-hidden border border-white/20 aspect-square">
-                  <img
-                    src={item.previewUrl}
-                    alt={`Foto ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+            <div
+              className={`relative rounded-xl overflow-hidden border border-borde ${
+                mapaAgrandado
+                  ? 'fixed inset-4 z-50 bg-gris-oscuro flex flex-col p-4 shadow-2xl'
+                  : 'h-52 w-full'
+              }`}
+            >
+              {mapaAgrandado && (
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-borde">
+                  <span className="font-bold text-sm text-blanco">Ubicación en mapa — Formosa</span>
                   <button
                     type="button"
-                    onClick={() => quitarFoto(idx)}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-[10px] font-bold shadow"
-                    title="Eliminar foto"
+                    onClick={() => setMapaAgrandado(false)}
+                    className="px-3 py-1 rounded-lg bg-rojo text-blanco font-bold text-xs"
                   >
-                    ✕
+                    ✕ Cerrar pantalla
                   </button>
                 </div>
-              ))}
+              )}
+              <MapContainer
+                center={posicion}
+                zoom={14}
+                style={{ width: '100%', height: '100%' }}
+                scrollWheelZoom={true}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <ClickMapa
+                  onPick={(lat, lng) => {
+                    setForm((f) => ({ ...f, latitud: String(lat), longitud: String(lng) }));
+                  }}
+                />
+                <Marker position={posicion} icon={icono} />
+              </MapContainer>
             </div>
           </div>
-        )}
-      </div>
 
-      {error && (
-        <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-red-400 text-xs font-semibold">
-          ⚠️ {error}
-        </div>
+          {/* SECCIÓN 3: FOTOS */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase text-amarillo border-b border-borde pb-1">
+              3. Fotos de Fachada
+            </h4>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFotos}
+              className="w-full text-xs text-gris-azulado file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:fondo-dorado file:text-negro cursor-pointer"
+            />
+            {fotos.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">
+                {fotos.map((item, index) => (
+                  <div
+                    key={index}
+                    className="relative rounded-lg overflow-hidden border border-borde aspect-square"
+                  >
+                    <img
+                      src={item.previewUrl}
+                      alt="Fachada"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => quitarFoto(index)}
+                      className="absolute top-1 right-1 bg-rojo text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={cargando}
+            className="w-full rounded-xl fondo-dorado text-negro font-extrabold py-3 text-sm transition-all shadow-lg hover:brightness-110 disabled:opacity-50"
+          >
+            {cargando ? 'Procesando registro comercial...' : 'Completar Registro de Comercio'}
+          </button>
+        </form>
       )}
 
-      <button
-        type="submit"
-        disabled={cargando}
-        className="w-full py-3.5 rounded-xl bg-[#FFB800] hover:bg-yellow-400 text-black font-extrabold text-sm transition shadow-lg disabled:opacity-50"
-      >
-        {cargando ? 'Registrando comercio…' : 'Crear Cuenta y Comenzar'}
-      </button>
-
-      {/* MODAL PANTALLA COMPLETA DEL MAPA */}
-      {mapaAgrandado && (
-        <div className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur flex flex-col p-4 sm:p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
-            <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                Mapa de Formosa Capital — Seleccionar Ubicación
-              </h2>
-              <p className="text-xs text-gray-400">
-                Ajustá las coordenadas de tu local para los clientes cercanos.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setMapaAgrandado(false)}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition"
-            >
-              ✕ Cerrar y Confirmar Punto
-            </button>
-          </div>
-          <div className="flex-1 mt-4 rounded-2xl bg-[#070C16] border border-white/20 flex flex-col items-center justify-center p-6 text-center">
-            <div className="text-4xl mb-3">🗺️</div>
-            <h3 className="text-lg font-bold text-white">Ubicación Geográfica en Formosa Capital</h3>
-            <p className="text-sm text-gray-300 max-w-md mt-2">
-              Latitud: <span className="text-[#FFB800] font-bold">{form.latitud}</span> | Longitud: <span className="text-[#FFB800] font-bold">{form.longitud}</span>
-            </p>
-            <div className="mt-4 grid grid-cols-2 gap-3 w-full max-w-xs text-xs">
-              <input
-                type="text"
-                name="latitud"
-                value={form.latitud}
-                onChange={handleChange}
-                placeholder="Latitud"
-                className="rounded-lg bg-white/5 border border-white/10 px-2.5 py-1.5 text-white"
-              />
-              <input
-                type="text"
-                name="longitud"
-                value={form.longitud}
-                onChange={handleChange}
-                placeholder="Longitud"
-                className="rounded-lg bg-white/5 border border-white/10 px-2.5 py-1.5 text-white"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setMapaAgrandado(false)}
-              className="mt-5 bg-[#FFB800] hover:bg-yellow-400 text-black font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-lg"
-            >
-              Guardar y volver al formulario
-            </button>
-          </div>
+      {onVolverLogin && (
+        <div className="text-center pt-2 border-t border-borde/40">
+          <button
+            type="button"
+            onClick={onVolverLogin}
+            className="text-xs text-gris-azulado hover:text-blanco transition"
+          >
+            ← Volver a Iniciar Sesión
+          </button>
         </div>
       )}
-    </form>
+    </div>
   );
 }

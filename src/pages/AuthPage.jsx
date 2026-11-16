@@ -1,16 +1,16 @@
 /**
  * Página: AuthPage
- * Pantalla de inicio de sesión de SpotMarket:
- * - Fondo con mapa real interactivo de Formosa Capital.
- * - Muestra todos los comercios registrados con el logo de SpotMarket apuntando a su ubicación y su nombre.
- * - Tarjeta central dedicada exclusivamente a Iniciar Sesión (sin botón de registrar mi comercio).
+ * Pantalla de autenticación de SpotMarket:
+ * - Fondo con mapa interactivo de Formosa Capital con pines de comercios registrados.
+ * - Tarjeta central para Iniciar Sesión con opción de "(Recuperar contraseña)".
+ * - Permite alternar hacia el Registro Dual (Usuarios y Comerciantes).
  */
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import LoginForm from '../components/auth/LoginForm.jsx';
-import LogoCompleto from '../assets/Logo.svg';
+import RegisterComercioForm from '../components/auth/RegisterComercioForm.jsx';
 import LogoNavbar from '../assets/LogoNavbar.svg';
 import { api } from '../services/api.js';
 
@@ -22,8 +22,8 @@ function crearIconoComercio(nombre) {
     className: 'custom-spotmarket-pin',
     html: `
       <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); pointer-events: auto;">
-        <div style="background: rgba(11, 18, 32, 0.95); color: #FFF; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px; border: 1.5px solid #FFB800; box-shadow: 0 4px 12px rgba(0,0,0,0.7); white-space: nowrap; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-          <span style="color: #FFB800;">●</span> ${nombre}
+        <div style="background: rgba(10, 20, 40, 0.95); color: #f4f7ff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px; border: 1.5px solid #ffc72c; box-shadow: 0 4px 12px rgba(0,0,0,0.7); white-space: nowrap; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+          <span style="color: #ffc72c;">●</span> ${nombre}
         </div>
         <div style="width: 36px; height: 36px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));">
           <img src="${LogoNavbar}" style="width: 100%; height: 100%; object-fit: contain;" alt="${nombre}" />
@@ -37,6 +37,7 @@ function crearIconoComercio(nombre) {
 
 export default function AuthPage({ onLoginExitoso }) {
   const [comercios, setComercios] = useState([]);
+  const [mostrarRegistro, setMostrarRegistro] = useState(false);
 
   useEffect(() => {
     async function cargarComercios() {
@@ -51,7 +52,7 @@ export default function AuthPage({ onLoginExitoso }) {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#070C16]">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-negro py-10">
       {/* ── MAPA DE FORMOSA CAPITAL EN EL FONDO ── */}
       <div className="absolute inset-0 z-0">
         <MapContainer
@@ -63,7 +64,7 @@ export default function AuthPage({ onLoginExitoso }) {
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {comercios
             .filter((c) => c.latitud && c.longitud)
@@ -76,40 +77,68 @@ export default function AuthPage({ onLoginExitoso }) {
                   position={[lat, lng]}
                   icon={crearIconoComercio(com.nombre_local)}
                 >
-                  <Popup className="spot-popup">
-                    <div className="p-1 text-black">
-                      <p className="font-bold text-sm text-red-600">{com.nombre_local}</p>
-                      <p className="text-xs text-gray-700 font-semibold uppercase">{com.tipo_comercio || 'Comercio'}</p>
-                      <p className="text-xs text-gray-800 mt-1">{com.direccion}</p>
+                  <Popup>
+                    <div className="p-1 text-blanco">
+                      <p className="font-bold text-sm text-amarillo">{com.nombre_local}</p>
+                      <p className="text-xs text-gris-azulado font-semibold uppercase">{com.tipo_comercio || 'Comercio'}</p>
+                      <p className="text-xs text-blanco mt-1">{com.direccion}</p>
                     </div>
                   </Popup>
                 </Marker>
               );
             })}
         </MapContainer>
-        {/* Capa oscura sutil con viñeta para destacar la tarjeta de login */}
-        <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] pointer-events-none" />
+        <div className="absolute inset-0 bg-negro/50 backdrop-blur-[2px] pointer-events-none" />
       </div>
 
-      {/* Indicador de comercios en Formosa */}
-      <div className="absolute top-4 left-6 z-20 hidden sm:flex items-center gap-2 bg-[#0B111E]/80 backdrop-blur px-3 py-1.5 rounded-xl border border-white/10 pointer-events-auto">
-        <span className="text-xs font-bold text-gray-300">Formosa Capital · {comercios.length} comercios registrados</span>
+      {/* Indicador de comercios en mapa */}
+      <div className="absolute top-4 left-6 z-20 hidden sm:flex items-center gap-2 bg-gris-oscuro/90 backdrop-blur px-3 py-1.5 rounded-xl border border-borde">
+        <span className="text-xs font-bold text-gris-azulado">Formosa Capital · {comercios.length} comercios en mapa</span>
       </div>
 
-      {/* ── TARJETA FLOTANTE DE INICIO DE SESIÓN ── */}
-      <div className="relative z-10 w-full max-w-md mx-4 rounded-3xl bg-[#0B1220]/95 backdrop-blur-xl border border-white/15 p-8 shadow-2xl space-y-4">
-        <div className="w-20 h-20 mx-auto rounded-2xl bg-[#070C16] border border-white/15 p-1 shadow-2xl flex items-center justify-center">
-          <img src={LogoCompleto} alt="Spot Market Logo" className="w-full h-full object-contain" />
-        </div>
-        <div className="text-center">
-          <h1 className="text-2xl font-black text-white">
-            Iniciar <span className="text-[#FFB800]">Sesión</span>
+      {/* ── TARJETA CENTRAL ── */}
+      <div className={`relative z-10 w-full ${mostrarRegistro ? 'max-w-2xl' : 'max-w-md'} mx-4 rounded-3xl bg-gris-oscuro/95 backdrop-blur-xl border border-borde p-6 sm:p-8 shadow-2xl transition-all`}>
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center gap-2 mb-2">
+            <img src={LogoNavbar} alt="SpotMarket Logo" className="h-10 w-10 object-contain" />
+            <span className="font-marca text-3xl text-blanco">
+              Spot<span className="text-amarillo">Market</span>
+            </span>
+          </div>
+          <h1 className="text-xl font-bold text-blanco">
+            {mostrarRegistro ? 'Registro en SpotMarket' : 'Iniciar Sesión'}
           </h1>
-          <p className="text-gray-400 text-xs mt-1">
-            Accedé al panel de comerciante en SpotMarket
+          <p className="text-xs text-gris-azulado mt-1">
+            {mostrarRegistro
+              ? 'Registrá tu comercio local o tu cuenta de vecino consumidor'
+              : 'Accedé para administrar tu comercio o consultar promociones'}
           </p>
         </div>
-        <LoginForm onLoginExitoso={onLoginExitoso} />
+
+        {mostrarRegistro ? (
+          <RegisterComercioForm
+            onRegistroExitoso={(u) => {
+              if (onLoginExitoso) onLoginExitoso(u);
+            }}
+            onVolverLogin={() => setMostrarRegistro(false)}
+          />
+        ) : (
+          <>
+            <LoginForm onLoginExitoso={onLoginExitoso} />
+            <div className="mt-6 pt-4 border-t border-borde/60 text-center">
+              <p className="text-xs text-gris-azulado">
+                ¿No tenés una cuenta todavía?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMostrarRegistro(true)}
+                  className="text-amarillo hover:underline font-bold"
+                >
+                  Registrate gratis
+                </button>
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
