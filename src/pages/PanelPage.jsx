@@ -118,7 +118,7 @@ export default function PanelPage({ usuario, onLogout }) {
               </span>
             </div>
             <p className="text-xs text-gray-400 mt-1">
-              📍 {comercio?.direccion || 'Formosa Capital'} · {comercio?.tipo_comercio || 'Minorista'}
+              {comercio?.direccion || 'Formosa Capital'} · {comercio?.tipo_comercio || 'Minorista'}
               {comercio?.whatsapp ? ` · WhatsApp: ${comercio.whatsapp}` : (comercio?.telefono ? ` · Tel: ${comercio.telefono}` : '')}
               {comercio?.horario_atencion ? ` · Horario: ${comercio.horario_atencion}` : ''}
             </p>

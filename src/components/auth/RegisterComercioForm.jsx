@@ -306,7 +306,6 @@ export default function RegisterComercioForm({ onRegistroExitoso }) {
 
         {/* VISTA PREVIA DEL MAPA */}
         <div className="rounded-xl overflow-hidden border border-white/10 bg-[#070C16] p-4 text-center">
-          <div className="text-2xl mb-1">📍</div>
           <p className="text-xs text-gray-300 font-semibold">
             Coordenadas: {form.latitud}, {form.longitud}
           </p>
@@ -400,7 +399,7 @@ export default function RegisterComercioForm({ onRegistroExitoso }) {
           <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <div>
               <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <span>📍</span> Mapa de Formosa Capital — Seleccionar Ubicación
+                Mapa de Formosa Capital — Seleccionar Ubicación
               </h2>
               <p className="text-xs text-gray-400">
                 Ajustá las coordenadas de tu local para los clientes cercanos.
